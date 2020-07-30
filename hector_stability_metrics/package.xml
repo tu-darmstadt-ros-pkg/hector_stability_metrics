@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>hector_stability_metrics</name>
+  <version>0.1.0</version>
+  <description>The hector_stability_metrics package</description>
+
+  <maintainer email="fabian@sim.tu-darmstadt.de">Stefan Fabian</maintainer>
+  <maintainer email="oehler@sim.tu-darmstadt.de">Martin Oehler</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

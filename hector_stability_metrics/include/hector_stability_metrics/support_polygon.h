@@ -18,8 +18,8 @@
 #ifndef HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H
 #define HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H
 
-#include <Eigen/Core>
-#include <vector>
+#include "hector_stability_metrics/math/hull.h"
+#include "hector_stability_metrics/math/types.h"
 
 namespace hector_stability_metrics
 {
@@ -29,13 +29,38 @@ struct SupportPolygon
 {
   //! The convex hull of the contact points of the robot with the ground. The contact points should ordered clockwise
   //! when viewed from above.
-  std::vector<Eigen::Matrix<Scalar, 3, 1>, Eigen::aligned_allocator<Eigen::Matrix<Scalar, 3, 1> > > contact_hull_points;
+  Vector3List<Scalar> contact_hull_points;
   //! The stability of each axis. Index 0 is the stability of the axis from hull point 0 to hull point 1.
   std::vector<Scalar> axis_stabilities;
 };
 
-typedef SupportPolygon<double> SupportPolygond;
-typedef SupportPolygon<float> SupportPolygonf;
+using SupportPolygonf = SupportPolygon<float>;
+using SupportPolygond = SupportPolygon<double>;
+
+template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+void supportPolygonFromSortedContactPoints( const Container &points, SupportPolygon<Scalar> &result )
+{
+  math::convexHull(points, result.contact_hull_points);
+}
+
+template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+SupportPolygon<Scalar> supportPolygonFromSortedContactPoints( const Container &points )
+{
+  SupportPolygon<Scalar> result;
+  math::convexHull(points, result.contact_hull_points);
+  return result;
+}
+
+template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+SupportPolygon<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points)
+{
+  Container copy = points;
+  std::sort(copy.begin(), copy.end(), [](const typename Container::value_type &a, const typename Container::value_type &b) {
+    if (a.y() < b.y()) return true;
+    return a.y() == b.y() && a.x() < b.x();
+  });
+  return supportPolygonFromSortedContactPoints(copy);
+}
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H

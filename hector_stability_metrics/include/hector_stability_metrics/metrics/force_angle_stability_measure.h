@@ -18,6 +18,7 @@
 #ifndef HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H
 #define HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H
 
+#include "hector_stability_metrics/math/types.h"
 #include "hector_stability_metrics/support_polygon.h"
 
 namespace hector_stability_metrics
@@ -38,8 +39,8 @@ namespace hector_stability_metrics
  */
 template<typename Scalar>
 size_t computeForceAngleStabilityMeasure( SupportPolygon<Scalar> &support_polygon,
-                                          const Eigen::Matrix<Scalar, 3, 1> &com,
-                                          const Eigen::Matrix<Scalar, 3, 1> &external_force,
+                                          const Vector3<Scalar> &com,
+                                          const Vector3<Scalar> &external_force,
                                           Scalar normalization_factor = Scalar( 1.0 ))
 {
   support_polygon.axis_stabilities.resize( support_polygon.contact_hull_points.size());
@@ -51,14 +52,14 @@ size_t computeForceAngleStabilityMeasure( SupportPolygon<Scalar> &support_polygo
     size_t b = i + 1;
     if ( b == support_polygon.contact_hull_points.size())
       b = 0;
-    Eigen::Matrix<Scalar, 3, 1> axis =
+    Vector3<Scalar> axis =
       (support_polygon.contact_hull_points[b] - support_polygon.contact_hull_points[i]).normalized();
     Eigen::Matrix<Scalar, 3, 3> projection = Eigen::Matrix<Scalar, 3, 3>::Identity() - axis * axis.transpose();
-    Eigen::Matrix<Scalar, 3, 1> axis_normal = projection * (support_polygon.contact_hull_points[b] - com);
+    Vector3<Scalar> axis_normal = projection * (support_polygon.contact_hull_points[b] - com);
     // Since the mass normally doesn't change, we omit it
-    Eigen::Matrix<Scalar, 3, 1> force_component = projection * external_force;
+    Vector3<Scalar> force_component = projection * external_force;
     Scalar force_component_norm = force_component.norm();
-    Eigen::Matrix<Scalar, 3, 1> force_component_normalized = force_component / force_component_norm;
+    Vector3<Scalar> force_component_normalized = force_component / force_component_norm;
     Scalar distance =
       (-axis_normal + axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
     axis_normal.normalize();

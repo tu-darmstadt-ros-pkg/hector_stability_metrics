@@ -18,6 +18,8 @@
 #ifndef HECTOR_STABILITY_METRICS_HULL_H
 #define HECTOR_STABILITY_METRICS_HULL_H
 
+#include <cstddef>
+
 namespace hector_stability_metrics
 {
 namespace math

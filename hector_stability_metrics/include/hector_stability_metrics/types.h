@@ -28,7 +28,7 @@ using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 using Vector3f = Vector3<float>;
 using Vector3d = Vector3<double>;
 template <typename Scalar>
-using Vector3List = std::vector<Vector3<Scalar>, Eigen::aligned_allocator<Vector3<Scalar>>>;
+using Vector3List = std::vector<Vector3<Scalar> >;
 
 template <typename Scalar>
 using Isometry3 = Eigen::Transform<Scalar, 3, Eigen::Isometry>;

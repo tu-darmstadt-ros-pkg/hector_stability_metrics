@@ -21,6 +21,8 @@
 #include "hector_stability_metrics/support_polygon.h"
 #include "hector_stability_metrics/types.h"
 
+#include <Eigen/Geometry>
+
 namespace hector_stability_metrics
 {
 
@@ -63,7 +65,7 @@ size_t computeForceAngleStabilityMeasure( SupportPolygon<Scalar> &support_polygo
     Scalar distance =
       (-axis_normal + axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
     axis_normal.normalize();
-    Scalar sigma = force_component_normalized.cross( axis_normal ).dot( axis ) > 0 ? 1 : -1;
+    Scalar sigma = axis_normal.cross( force_component_normalized ).dot( axis ) < 0 ? 1 : -1;
     Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ));
     Scalar beta = theta * distance * force_component_norm;
     support_polygon.axis_stabilities[i] = beta * normalization_factor;

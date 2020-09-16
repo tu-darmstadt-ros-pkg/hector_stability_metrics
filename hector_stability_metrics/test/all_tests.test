@@ -1,0 +1,3 @@
+<launch>
+  <include file="$(find hector_stability_metrics)/test/test_stability_measures.test"/>
+</launch>

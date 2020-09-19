@@ -19,10 +19,18 @@
 #define HECTOR_STABILITY_METRICS_TYPES_H
 
 #include <Eigen/Core>
+#include <Eigen/StdVector>
 #include <vector>
 
 namespace hector_stability_metrics
 {
+template<typename Scalar>
+using Vector2 = Eigen::Matrix<Scalar, 2, 1>;
+using Vector2f = Vector2<float>;
+using Vector2d = Vector2<double>;
+template<typename Scalar>
+using Vector2List = std::vector<Vector2<Scalar>, Eigen::aligned_allocator<Vector2<Scalar> > >;
+
 template <typename Scalar>
 using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 using Vector3f = Vector3<float>;
@@ -34,6 +42,7 @@ template <typename Scalar>
 using Isometry3 = Eigen::Transform<Scalar, 3, Eigen::Isometry>;
 using Isometry3f = Isometry3<float>;
 using Isometry3d = Isometry3<double>;
+
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_TYPES_H

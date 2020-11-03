@@ -17,15 +17,17 @@
 
 #include "eigen_tests.h"
 #include <hector_stability_metrics/metrics/force_angle_stability_measure.h>
+#include <hector_stability_metrics/metrics/energy_stability_margin.h>
+#include <hector_stability_metrics/metrics/stability_metric_base.h>
+#include <hector_stability_metrics/metrics/stability_metric_base2.h>
 
-
-TEST( StabilityMeasures, forceAngleStabilityMeasure )
+TEST(StabilityMeasures, forceAngleStabilityMeasure)
 {
   // TODO
 }
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-  testing::InitGoogleTest( &argc, argv );
+  testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

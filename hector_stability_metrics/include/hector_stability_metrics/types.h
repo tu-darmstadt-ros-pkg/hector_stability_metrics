@@ -24,17 +24,24 @@
 
 namespace hector_stability_metrics
 {
-template<typename Scalar>
+template <typename Scalar>
 using Vector2 = Eigen::Matrix<Scalar, 2, 1>;
 using Vector2f = Vector2<float>;
 using Vector2d = Vector2<double>;
-template<typename Scalar>
+template <typename Scalar>
 using Vector2List = std::vector<Vector2<Scalar>, Eigen::aligned_allocator<Vector2<Scalar> > >;
 
 template <typename Scalar>
 using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 using Vector3f = Vector3<float>;
 using Vector3d = Vector3<double>;
+template <typename Scalar>
+using Vector3List = std::vector<Vector3<Scalar> >;
+
+template <typename Scalar>
+using VectorX = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+using VectorXf = VectorX<float>;
+using VectorXd = VectorX<double>;
 template <typename Scalar>
 using Vector3List = std::vector<Vector3<Scalar> >;
 

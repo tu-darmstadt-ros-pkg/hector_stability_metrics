@@ -25,34 +25,40 @@ namespace hector_stability_metrics
 {
 
 template <typename Scalar>
-struct SupportPolygon
-{
-  //! The convex hull of the contact points of the robot with the ground. The contact points should ordered clockwise
-  //! when viewed from above.
-  Vector3List<Scalar> contact_hull_points;
-  //! The stability of each axis. Index 0 is the stability of the axis from hull point 0 to hull point 1.
-  std::vector<Scalar> axis_stabilities;
-};
+using SupportPolygon = Vector3List<Scalar>;
 
 using SupportPolygonf = SupportPolygon<float>;
 using SupportPolygond = SupportPolygon<double>;
 
+template <typename Scalar>
+struct SupportPolygonWithStabilities
+{
+  //! The convex hull of the contact points of the robot with the ground. The contact points should be ordered clockwise
+  //! when viewed from above.
+  SupportPolygon<Scalar> contact_hull_points;
+  //! The stability of each axis. Index 0 is the stability of the axis from hull point 0 to hull point 1.
+  std::vector<Scalar> axis_stabilities;
+};
+
+using SupportPolygonWithStabilitiesf = SupportPolygonWithStabilities<float>;
+using SupportPolygonWithStabilitiesd = SupportPolygonWithStabilities<double>;
+
 template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 void supportPolygonFromSortedContactPoints( const Container &points, SupportPolygon<Scalar> &result )
 {
-  math::convexHull(points, result.contact_hull_points);
+  math::convexHull(points, result);
 }
 
 template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 SupportPolygon<Scalar> supportPolygonFromSortedContactPoints( const Container &points )
 {
   SupportPolygon<Scalar> result;
-  math::convexHull(points, result.contact_hull_points);
+  math::convexHull(points, result);
   return result;
 }
 
 template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-SupportPolygon<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points)
+SupportPolygon<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points )
 {
   Container copy = points;
   std::sort(copy.begin(), copy.end(), [](const typename Container::value_type &a, const typename Container::value_type &b) {

@@ -79,7 +79,7 @@ std_msgs::ColorRGBA intensityToColor( Scalar value )
 }
 
 template<typename Scalar>
-visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygon<Scalar> &support_polygon,
+visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygonWithStabilities<Scalar> &support_polygon,
                                                              const std::string &robot_frame,
                                                              const std_msgs::ColorRGBA &contact_marker_color,
                                                              const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
@@ -133,7 +133,7 @@ visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygo
 }
 
 template<typename Scalar>
-visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygon<Scalar> &support_polygon,
+visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygonWithStabilities<Scalar> &support_polygon,
                                                              const std::string &robot_frame,
                                                              const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
 {
@@ -145,7 +145,7 @@ visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygo
 }
 
 template<typename Scalar>
-visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygon<Scalar> &support_polygon,
+visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygonWithStabilities<Scalar> &support_polygon,
                                                              const Isometry3<Scalar> &pose,
                                                              const std::string &world_frame,
                                                              const std_msgs::ColorRGBA &contact_marker_color,
@@ -160,7 +160,7 @@ visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygo
 }
 
 template<typename Scalar>
-visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygon<Scalar> &support_polygon,
+visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygonWithStabilities<Scalar> &support_polygon,
                                                              const Isometry3<Scalar> &pose,
                                                              const std::string &world_frame,
                                                              const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )

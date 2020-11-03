@@ -40,7 +40,7 @@ namespace hector_stability_metrics
  * @return The index of the least stable axis
  */
 template<typename Scalar>
-size_t computeForceAngleStabilityMeasure( SupportPolygon<Scalar> &support_polygon,
+size_t computeForceAngleStabilityMeasure( SupportPolygonWithStabilities<Scalar> &support_polygon,
                                           const Vector3<Scalar> &com,
                                           const Vector3<Scalar> &external_force,
                                           Scalar normalization_factor = Scalar( 1.0 ))

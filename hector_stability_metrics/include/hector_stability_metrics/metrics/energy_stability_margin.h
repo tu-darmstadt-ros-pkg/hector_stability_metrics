@@ -25,12 +25,8 @@ public:
     }
   }
 };
-template <typename _Scalar, typename _DataStruct>
-struct base_traits<EnergyStabilityMargin<_Scalar, _DataStruct>>
-{
-  typedef _Scalar Scalar;
-  typedef _DataStruct DataStruct;
-};
+
+STABLITY_CREATE_DERIVED_METRIC_TRAITS(EnergyStabilityMargin)
 
 }  // namespace hector_stability_metrics
 

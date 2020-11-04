@@ -20,63 +20,55 @@
 
 #include "hector_stability_metrics/support_polygon.h"
 #include "hector_stability_metrics/types.h"
+#include "hector_stability_metrics/metrics/stability_metric_base.h"
 
 #include <Eigen/Geometry>
 
 namespace hector_stability_metrics
 {
-
-/*!
- * Computes the Force Angle Stability Measure (Papadopoulos, Rey, 1996) for the given support polygon and returns the
- * index of the least stable axis.
- * The stabilities for each axis are stored in the support_polygon. Previous values are overwritten.
- * @param support_polygon A support polygon where it is assumed that the points are ordered clockwise when viewed from
- * above.
- * @param com The position of the center of mass
- * @param external_force External force acting on the COM. Usually the gravity vector
- * @param normalization_factor A normalization factor that is multiplied with each beta which can be used  to normalize
- * against a base stability, e.g., the robot's stability when standing on flat ground (Note: The min beta may still
- * become greater than 1)
- * @return The index of the least stable axis
- */
-template<typename Scalar>
-size_t computeForceAngleStabilityMeasure( SupportPolygonWithStabilities<Scalar> &support_polygon,
-                                          const Vector3<Scalar> &com,
-                                          const Vector3<Scalar> &external_force,
-                                          Scalar normalization_factor = Scalar( 1.0 ))
+template <typename Scalar, typename DataStruct>
+class ForceAngleStabilityMargin : public StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>
 {
-  support_polygon.axis_stabilities.resize( support_polygon.contact_hull_points.size());
-
-  Scalar min_beta = std::numeric_limits<Scalar>::infinity();
-  size_t min_index = 0;
-  for ( size_t i = 0; i < support_polygon.contact_hull_points.size(); ++i )
+public:
+  ForceAngleStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum)
+    : StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>(minimum_function)
+  {}
+  /*!
+   * Computes the Force Angle Stability Measure (Papadopoulos, Rey, 1996) for the given support polygon and returns the
+   * index of the least stable axis.
+   * The stabilities for each axis are stored in the stability_vector. Previous values are overwritten.
+   * @param support_polygon A support polygon where it is assumed that the points are ordered clockwise when viewed from
+   * above.
+   * @param data A data struct containing all addition
+   * @param stability_vector A vector containting the stability values for all edges of the support polygon
+   */
+  void computeStabilityValueForAllEdgesImpl(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_vector)
   {
-    size_t b = i + 1;
-    if ( b == support_polygon.contact_hull_points.size())
-      b = 0;
-    Vector3<Scalar> axis =
-      (support_polygon.contact_hull_points[b] - support_polygon.contact_hull_points[i]).normalized();
-    Eigen::Matrix<Scalar, 3, 3> projection = Eigen::Matrix<Scalar, 3, 3>::Identity() - axis * axis.transpose();
-    Vector3<Scalar> axis_normal = projection * (support_polygon.contact_hull_points[b] - com);
-    // Since the mass normally doesn't change, we omit it
-    Vector3<Scalar> force_component = projection * external_force;
-    Scalar force_component_norm = force_component.norm();
-    Vector3<Scalar> force_component_normalized = force_component / force_component_norm;
-    Scalar distance =
-      (-axis_normal + axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
-    axis_normal.normalize();
-    Scalar sigma = axis_normal.cross( force_component_normalized ).dot( axis ) < 0 ? 1 : -1;
-    Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ));
-    Scalar beta = theta * distance * force_component_norm;
-    support_polygon.axis_stabilities[i] = beta * normalization_factor;
-    if ( beta < min_beta )
+    stability_vector.resize(support_polygon.size());
+
+    for (size_t i = 0; i < support_polygon.size(); ++i)
     {
-      min_beta = beta;
-      min_index = i;
+      size_t b = i + 1;
+      if (b == support_polygon.size())
+        b = 0;
+      Vector3<Scalar> axis = (support_polygon[b] - support_polygon[i]).normalized();
+      Eigen::Matrix<Scalar, 3, 3> projection = Eigen::Matrix<Scalar, 3, 3>::Identity() - axis * axis.transpose();
+      Vector3<Scalar> axis_normal = projection * (support_polygon[b] - data.com);
+      // Since the mass normally doesn't change, we omit it
+      Vector3<Scalar> force_component = projection * data.external_force;
+      Scalar force_component_norm = force_component.norm();
+      Vector3<Scalar> force_component_normalized = force_component / force_component_norm;
+      Scalar distance = (-axis_normal + axis_normal.dot(force_component_normalized) * force_component_normalized).norm();
+      axis_normal.normalize();
+      Scalar sigma = axis_normal.cross(force_component_normalized).dot(axis) < 0 ? 1 : -1;
+      Scalar theta = sigma * std::acos(force_component_normalized.dot(axis_normal));
+      Scalar beta = theta * distance * force_component_norm;
+      stability_vector[i] = beta * data.normalization_factor;
     }
   }
-  return min_index;
-}
-}
+};
+
+STABLITY_CREATE_DERIVED_METRIC_TRAITS(ForceAngleStabilityMargin)
+}  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H

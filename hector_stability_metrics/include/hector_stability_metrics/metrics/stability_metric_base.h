@@ -9,6 +9,16 @@
 #include "hector_stability_metrics/math/minimum_functions.h"
 #include "hector_stability_metrics/metrics/common_data.h"
 
+// clang-format off
+#define STABLITY_CREATE_DERIVED_METRIC_TRAITS(DerivedMetric)          \
+template <typename _Scalar, typename _DataStruct>               \
+  struct base_traits<DerivedMetric<_Scalar, _DataStruct>>       \
+  {                                                             \
+    typedef _Scalar Scalar;                                     \
+    typedef _DataStruct DataStruct;                             \
+  };
+// clang-format on
+
 namespace hector_stability_metrics
 {
 template <typename Derived>

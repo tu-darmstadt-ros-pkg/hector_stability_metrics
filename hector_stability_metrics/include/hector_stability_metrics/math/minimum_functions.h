@@ -2,21 +2,26 @@
 #define HECTOR_STABILITY_METRICS_MINIMUM_FUNCTIONS_H
 #include <vector>
 #include <math.h>
+#include <functional>
+namespace hector_stability_metrics
+{
 template <typename Scalar>
+using MinimumFunction = std::function<Scalar(const std::vector<Scalar>&)>;
 
-Scalar StandardMinimum(std::vector<Scalar>& values)
+template <typename Scalar>
+Scalar StandardMinimum(const std::vector<Scalar>& values)
 {
   Scalar min_value = values[0];
 
   for (int i = 1; i < values.size(); i++)
   {
-    min_value = min(min_value, values[i]);
+    min_value = std::min(min_value, values[i]);
   }
   return min_value;
 }
 
 template <typename Scalar>
-Scalar ExponentialWeightig(std::vector<Scalar>& values, Scalar a, Scalar b, Scalar c)
+Scalar ExponentialWeightig(const std::vector<Scalar>& values, Scalar a, Scalar b, Scalar c)
 {
   Scalar value = 0;
 
@@ -26,5 +31,5 @@ Scalar ExponentialWeightig(std::vector<Scalar>& values, Scalar a, Scalar b, Scal
   }
   return value * a / values.size();
 }
-
+}  // namespace hector_stability_metrics
 #endif  // HECTOR_STABILITY_METRICS_MINIMUM_FUNCTIONS_H

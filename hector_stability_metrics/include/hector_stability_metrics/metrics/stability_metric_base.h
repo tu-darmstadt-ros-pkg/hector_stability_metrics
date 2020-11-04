@@ -11,11 +11,17 @@
 
 namespace hector_stability_metrics
 {
-template <typename Scalar, typename Derived, typename DataStruct = CommonData<Scalar>>
+template <typename Derived>
+struct base_traits;
+
+template <typename Derived>
 class StabilityMetricBase
 {
 public:
-  StabilityMetricBase(std::function<Scalar(VectorX<Scalar>)> minimum_function = StandardMinimum) { minimum_function_ = minimum_function; }
+  typedef typename base_traits<Derived>::Scalar Scalar;
+  typedef typename base_traits<Derived>::DataStruct DataStruct;
+
+  StabilityMetricBase(MinimumFunction<Scalar> minimum_function = StandardMinimum) { minimum_function_ = minimum_function; }
 
   Scalar getStabilityValue(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data)
   {
@@ -25,7 +31,7 @@ public:
 
   Scalar getStabilityValue(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_values)
   {
-    getStabilityValueForAllEdges(data, stability_values);
+    computeStabilityValueForAllEdges(support_polygon, data, stability_values);
     return minimum_function_(stability_values);
   }
 
@@ -49,16 +55,16 @@ public:
     return min_value;
   }
 
-  void computeStabilityValueForAllEdges(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, VectorX<Scalar>& stability_vector)
+  void computeStabilityValueForAllEdges(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_vector)
   {
-    derived().getStabilityValueForAllEdgesImpl(support_polygon, data, stability_vector);
+    derived().computeStabilityValueForAllEdgesImpl(support_polygon, data, stability_vector);
   }
 
 private:
-  std::function<Scalar(VectorX<Scalar>&)> minimum_function_;
+  std::function<Scalar(std::vector<Scalar>&)> minimum_function_;
 
-  StabilityMetricBase& derived() { return *static_cast<Derived*>(this); }
-  const StabilityMetricBase& derived() const { return *static_cast<const Derived*>(this); }
+  Derived& derived() { return *static_cast<Derived*>(this); }
+  const Derived& derived() const { return *static_cast<const Derived*>(this); }
 };
 
 }  // namespace hector_stability_metrics

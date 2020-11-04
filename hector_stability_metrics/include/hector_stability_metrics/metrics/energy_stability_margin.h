@@ -3,19 +3,35 @@
 
 #include "hector_stability_metrics/support_polygon.h"
 #include "hector_stability_metrics/types.h"
-#include "hector_stability_metrics/metrics/stability_metric_base2.h"
+#include "hector_stability_metrics/metrics/stability_metric_base.h"
 
 namespace hector_stability_metrics
 {
 template <typename Scalar, typename DataStruct = CommonData<Scalar>>
-class EnergyStabilityMargin : StabilityMetricBase<Scalar, EnergyStabilityMargin<Scalar, DataStruct>, DataStruct>
+class EnergyStabilityMargin : public StabilityMetricBase<EnergyStabilityMargin<Scalar, DataStruct>>
 {
-  VectorX<Scalar> getStabilityValueForAllEdgesImpl()
+public:
+  EnergyStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum)
+    : StabilityMetricBase<EnergyStabilityMargin<Scalar, DataStruct>>(minimum_function)
+  {}
+
+  void computeStabilityValueForAllEdgesImpl(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_vector)
   {
-    this->data_ptr_->support_polygon;
-    this->data_ptr_->com;
+    stability_vector.resize(support_polygon.size());
+
+    for (Scalar& s : stability_vector)
+    {
+      s = 0.5;
+    }
   }
 };
+template <typename _Scalar, typename _DataStruct>
+struct base_traits<EnergyStabilityMargin<_Scalar, _DataStruct>>
+{
+  typedef _Scalar Scalar;
+  typedef _DataStruct DataStruct;
+};
+
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_ENERGY_STABILITY_MARGIN_H

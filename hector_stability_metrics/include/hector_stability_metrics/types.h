@@ -25,6 +25,11 @@
 namespace hector_stability_metrics
 {
 template <typename Scalar>
+using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
+using Matrix3f = Matrix3<float>;
+using Matrix3d = Matrix3<double>;
+
+template <typename Scalar>
 using Vector2 = Eigen::Matrix<Scalar, 2, 1>;
 using Vector2f = Vector2<float>;
 using Vector2d = Vector2<double>;

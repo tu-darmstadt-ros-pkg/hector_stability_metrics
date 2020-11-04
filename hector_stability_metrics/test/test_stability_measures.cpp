@@ -19,9 +19,12 @@
 #include <hector_stability_metrics/metrics/force_angle_stability_measure.h>
 #include <hector_stability_metrics/metrics/energy_stability_margin.h>
 #include <hector_stability_metrics/metrics/stability_metric_base.h>
+#include <hector_stability_metrics/metrics/static_stability_margin.h>
 
 using namespace hector_stability_metrics;
 using namespace Eigen;
+
+const double FLOATING_POINT_TOLLERANCE = 0.00001;
 TEST(StabilityMeasures, StabilityMetricBase_getLeastStableEdgeValue)
 {
   MinimumFunction<double> min_fun = StandardMinimum<double>;
@@ -40,15 +43,61 @@ TEST(StabilityMeasures, EnergyStabilityMargin)
 
   CommonData<double> cd;
   cd.com = Vector3d(0.5, 0.5, 1);
-  SupportPolygond sup_pol = { Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 1, 0), Vector3d(0, 1, 0) };
+  SupportPolygond sup_pol = { Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 1, 0), Vector3d(1, 0, 0) };
   std::vector<double> vec;
 
   esm.getStabilityValue(sup_pol, cd, vec);
 }
 
-TEST(StabilityMeasures, forceAngleStabilityMeasure)
+TEST(StabilityMeasures, StaticStabilityMargin)
 {
-  // TODO
+  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  StaticStabilityMargin<double> ssm(min_fun);
+
+  CommonData<double> cd;
+  cd.com = Vector3d(0.2, 0.7, 1);
+
+  SupportPolygond sup_pol = { Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(1, 2, 0), Vector3d(1, 0, 0) };
+  std::vector<double> vec;
+
+  double stability_res = ssm.getStabilityValue(sup_pol, cd, vec);
+
+  EXPECT_NEAR(vec[0], 0.2, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[1], 1.3, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[2], 0.8, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[3], 0.7, FLOATING_POINT_TOLLERANCE);
+
+  EXPECT_NEAR(stability_res, 0.2, FLOATING_POINT_TOLLERANCE);
+
+  cd.com = Vector3d(-0.2, 0.7, 1);
+  stability_res = ssm.getStabilityValue(sup_pol, cd, vec);
+
+  EXPECT_NEAR(vec[0], -0.2, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[1], 1.3, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[2], 1.2, FLOATING_POINT_TOLLERANCE);
+  EXPECT_NEAR(vec[3], 0.7, FLOATING_POINT_TOLLERANCE);
+
+  EXPECT_NEAR(stability_res, -0.2, FLOATING_POINT_TOLLERANCE);
+}
+template <typename Scalar>
+struct ForceData : CommonData<Scalar>
+{
+  Vector3<Scalar> external_force;
+  Scalar normalization_factor = Scalar(1);
+};
+TEST(StabilityMeasures, ForceAngleStabilityMeasure)
+{
+  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  ForceAngleStabilityMargin<double, ForceData<double>> fasm(min_fun);
+
+  ForceData<double> fd;
+  fd.com = Vector3d(0.5, 0.5, 1);
+  fd.external_force = Vector3d(0, 0, -9.81);
+
+  SupportPolygond sup_pol = { Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 1, 0), Vector3d(1, 0, 0) };
+  std::vector<double> vec;
+
+  fasm.getStabilityValue(sup_pol, fd, vec);
 }
 
 int main(int argc, char** argv)

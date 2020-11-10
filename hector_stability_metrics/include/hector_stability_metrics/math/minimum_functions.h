@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <functional>
+
 namespace hector_stability_metrics
 {
 template <typename Scalar>
@@ -21,7 +22,7 @@ Scalar StandardMinimum(const std::vector<Scalar>& values)
 }
 
 template <typename Scalar>
-Scalar ExponentialWeightig(const std::vector<Scalar>& values, Scalar a, Scalar b, Scalar c)
+Scalar ExponentialWeightig(const std::vector<Scalar>& values, const Scalar& a, const Scalar& b, const Scalar& c)
 {
   Scalar value = 0;
 

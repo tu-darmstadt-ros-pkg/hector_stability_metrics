@@ -4,6 +4,8 @@ project(hector_stability_metrics)
 find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+set (CMAKE_BUILD_TYPE Debug)
+
 catkin_package(
   INCLUDE_DIRS include
   DEPENDS EIGEN3

@@ -11,6 +11,10 @@ template <typename Scalar, typename DataStruct = CommonData<Scalar>>
 class StaticStabilityMargin : public StabilityMetricBase<StaticStabilityMargin<Scalar, DataStruct>>
 {
 public:
+  /** @brief StaticStabilityMargin This class computes the Static Stability Margin defined in "On the Stability Properties of Quadruped Creeping Gaits" (McGhee, Frank, 1968).
+   * @param minimum_function The minimum function that should be used for determining the overall stability.
+   * @param use_signed_version If set to false the original unsigened version as defined by Garcia and De Santos is used.
+   */
   StaticStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum)
     : StabilityMetricBase<StaticStabilityMargin<Scalar, DataStruct>>(minimum_function)
   {}
@@ -26,7 +30,7 @@ public:
     project_2d(1, 1) = 1;
     for (int i = 0; i < nr_of_edges; i++)
     {
-      Vector3<Scalar> edge = this->getSupportPolygonEdge(support_polygon, i);
+      Vector3<Scalar> edge = getSupportPolygonEdge(support_polygon, i);
       Vector3<Scalar> projected_edge = project_2d * edge;
       Vector3<Scalar> projected_edge_point = project_2d * support_polygon[i];
       Vector3<Scalar> projected_com = project_2d * data.com;

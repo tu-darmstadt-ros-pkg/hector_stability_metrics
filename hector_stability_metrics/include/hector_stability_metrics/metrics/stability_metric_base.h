@@ -70,20 +70,8 @@ public:
     derived().computeStabilityValueForAllEdgesImpl(support_polygon, data, stability_vector);
   }
 
-  Vector3<Scalar> getSupportPolygonEdge(const SupportPolygon<Scalar>& support_polygon, size_t index)
-  {
-    assert(index < support_polygon.size());
-
-    size_t next_index = index + 1;
-    if (next_index == support_polygon.size())
-    {
-      next_index = 0;
-    }
-    return (support_polygon[next_index] - support_polygon[index]);
-  }
-
 private:
-  std::function<Scalar(std::vector<Scalar>&)> minimum_function_;
+  MinimumFunction<Scalar> minimum_function_;
 
   Derived& derived() { return *static_cast<Derived*>(this); }
   const Derived& derived() const { return *static_cast<const Derived*>(this); }

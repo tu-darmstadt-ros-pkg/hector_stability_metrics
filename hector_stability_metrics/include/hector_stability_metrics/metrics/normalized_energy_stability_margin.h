@@ -4,6 +4,7 @@
 #include "hector_stability_metrics/support_polygon.h"
 #include "hector_stability_metrics/types.h"
 #include "hector_stability_metrics/metrics/stability_metric_base.h"
+#include "hector_stability_metrics/math/sign_functions.h"
 
 namespace hector_stability_metrics
 {
@@ -12,17 +13,22 @@ class NormalizedEnergyStabilityMargin : public StabilityMetricBase<NormalizedEne
 {
 public:
   /**
-   * @brief EnergyStabilityMargin This class computes the Normalized Energy Stability Margin as defined in "An improved energy stability margin for walking machines subject to
-   * dynamic effects" (Garcia, De Santos, 2005), but despite in the original formulation, the stability value is negative for unstable edges of the support polygon in the default
-   * mode. This is helpful if used to analyze or optimize the stability. The original unsigned version can be used by by setting use_signed_version to false.
-   * @param minimum_function The minimum function that should be used for determining the over all stability.
-   * @param use_signed_version If set to false the original unsigened version as defined by Garcia and De Santos is used.
+   * @brief NormalizedEnergyStabilityMargin This class computes the Normalized Energy Stability Margin by Hirose et al. as defined in "An improved energy stability margin for
+   * walking machines subject to dynamic effects" (Garcia, De Santos, 2005). Additionally to the original formulation, a sign function can be given in order for  the stability
+   * value to be negative for unstable edges of the support polygon. This is helpful if used to analyze or optimize the stability. The original unsigned version is used in the
+   * default case by setting sign_function to a function allways returning 1.
+   * @param minimum_function The minimum function that should be used for determining the overall stability.
+   * @param sign_function If set to ConstantOne the original unsigened version as defined by Garcia and De Santos is used. If set to the standard sign function or a function
+   * approximating it the stability values for unstable edges will be negative. As the sign function is not contiously differentiable it is recommended to use an approximation when
+   * this metric is used for gradient based optimization.
    */
-  NormalizedEnergyStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum, bool use_signed_version = true)
+  NormalizedEnergyStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum, SignFunction<Scalar> sign_function = ConstantOne)
     : StabilityMetricBase<NormalizedEnergyStabilityMargin<Scalar, DataStruct>>(minimum_function)
   {
-    use_signed_version_ = use_signed_version;
+    sign_function_ = sign_function;
   }
+
+  static Scalar ConstantOne(const Scalar& value) { return Scalar(1); }
 
   void computeStabilityValueForAllEdgesImpl(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_vector)
   {
@@ -32,7 +38,7 @@ public:
     for (size_t i = 0; i < support_polygon.size(); ++i)
     {
       Vector3<Scalar> A = support_polygon[i];
-      Vector3<Scalar> edge = this->getSupportPolygonEdge(support_polygon, i);
+      Vector3<Scalar> edge = getSupportPolygonEdge(support_polygon, i);
       Vector3<Scalar> corner_to_com = data.com - A;
 
       // linear algebra calculations adapted from Ericson Real Time Collision Detection
@@ -50,19 +56,16 @@ public:
       // edge inclination relative to horizontal plane
       Scalar psi = asin(edge(2) / edge.norm());
 
-      // mass and acceleration due to gravity are ignored, as they only change the scale
+      // mass and acceleration due to gravity are ignored in the normalized version, as they only change the scale
       stability_vector[i] = R.norm() * (1 - cos(theta)) * cos(psi);
 
-      // flip the sign if the vehicle is unstable
-      if (use_signed_version_ && theta < 0)
-      {
-        stability_vector[i] = -stability_vector[i];
-      }
+      // multiply stability with the given sign_function of theta to enable returning negative stabilites if the vehicle is unstable
+      stability_vector[i] *= sign_function_(theta);
     }
   }
 
 private:
-  bool use_signed_version_;
+  SignFunction<Scalar> sign_function_;
 };
 
 STABLITY_CREATE_DERIVED_METRIC_TRAITS(NormalizedEnergyStabilityMargin)

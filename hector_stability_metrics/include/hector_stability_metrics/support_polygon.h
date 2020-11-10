@@ -23,7 +23,6 @@
 
 namespace hector_stability_metrics
 {
-
 template <typename Scalar>
 using SupportPolygon = Vector3List<Scalar>;
 
@@ -43,30 +42,51 @@ struct SupportPolygonWithStabilities
 using SupportPolygonWithStabilitiesf = SupportPolygonWithStabilities<float>;
 using SupportPolygonWithStabilitiesd = SupportPolygonWithStabilities<double>;
 
-template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-void supportPolygonFromSortedContactPoints( const Container &points, SupportPolygon<Scalar> &result )
+template <typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+void supportPolygonFromSortedContactPoints(const Container& points, SupportPolygon<Scalar>& result)
 {
   math::convexHull(points, result);
 }
 
-template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-SupportPolygon<Scalar> supportPolygonFromSortedContactPoints( const Container &points )
+template <typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+SupportPolygon<Scalar> supportPolygonFromSortedContactPoints(const Container& points)
 {
   SupportPolygon<Scalar> result;
   math::convexHull(points, result);
   return result;
 }
 
-template <typename Container, typename Scalar=typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-SupportPolygon<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points )
+template <typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+SupportPolygon<Scalar> supportPolygonFromUnsortedContactPoints(const Container& points)
 {
   Container copy = points;
-  std::sort(copy.begin(), copy.end(), [](const typename Container::value_type &a, const typename Container::value_type &b) {
-    if (a.y() < b.y()) return true;
+  std::sort(copy.begin(), copy.end(), [](const typename Container::value_type& a, const typename Container::value_type& b) {
+    if (a.y() < b.y())
+      return true;
     return a.y() == b.y() && a.x() < b.x();
   });
   return supportPolygonFromSortedContactPoints(copy);
 }
+
+/**
+ * @brief getSupportPolygonEdge returns a vector pointing from one corner of a support polygon to the next.
+ * @param support_polygon vector of the corner points in the support polygon in clockwise order
+ * @param index the indec of the corner of the suport polygon where the edge starts
+ * @return vector from the corner with the specified index to the next corner
+ */
+template <typename Scalar>
+Vector3<Scalar> getSupportPolygonEdge(const SupportPolygon<Scalar>& support_polygon, size_t index)
+{
+  assert(index < support_polygon.size());
+
+  size_t next_index = index + 1;
+  if (next_index == support_polygon.size())
+  {
+    next_index = 0;
+  }
+  return (support_polygon[next_index] - support_polygon[index]);
+}
+
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H

@@ -27,7 +27,7 @@ using namespace Eigen;
 const double FLOATING_POINT_TOLLERANCE = 0.00001;
 TEST(StabilityMeasures, StabilityMetricBase_getLeastStableEdgeValue)
 {
-  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  MinimumFunction<double> min_fun = standardMinimum<double>;
   NormalizedEnergyStabilityMargin<double> esm(min_fun);
   std::vector<double> vec = { 1, 2, 3, -4 };
   size_t least_stabel_index;
@@ -38,7 +38,7 @@ TEST(StabilityMeasures, StabilityMetricBase_getLeastStableEdgeValue)
 
 TEST(StabilityMeasures, StaticStabilityMargin)
 {
-  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  MinimumFunction<double> min_fun = standardMinimum<double>;
   StaticStabilityMargin<double> ssm(min_fun);
 
   CommonData<double> cd;
@@ -69,7 +69,7 @@ TEST(StabilityMeasures, StaticStabilityMargin)
 
 TEST(StabilityMeasures, NormalizedEnergyStabilityMargin)
 {
-  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  MinimumFunction<double> min_fun = standardMinimum<double>;
   NormalizedEnergyStabilityMargin<double, CommonData<double>> esm(min_fun);
 
   CommonData<double> cd;
@@ -104,9 +104,10 @@ struct ForceData : CommonData<Scalar>
   Vector3<Scalar> external_force;
   Scalar normalization_factor = Scalar(1);
 };
+
 TEST(StabilityMeasures, ForceAngleStabilityMeasure)
 {
-  MinimumFunction<double> min_fun = StandardMinimum<double>;
+  MinimumFunction<double> min_fun = standardMinimum<double>;
   ForceAngleStabilityMargin<double, ForceData<double>> fasm(min_fun);
 
   ForceData<double> fd;

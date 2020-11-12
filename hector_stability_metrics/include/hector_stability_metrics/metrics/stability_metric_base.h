@@ -48,7 +48,7 @@ public:
   typedef typename base_traits<Derived>::Scalar Scalar;
   typedef typename base_traits<Derived>::DataStruct DataStruct;
 
-  StabilityMetricBase(MinimumFunction<Scalar> minimum_function = StandardMinimum) { minimum_function_ = minimum_function; }
+  StabilityMetricBase(MinimumFunction<Scalar> minimum_function = standardMinimum) { minimum_function_ = minimum_function; }
 
   Scalar getStabilityValue(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data)
   {

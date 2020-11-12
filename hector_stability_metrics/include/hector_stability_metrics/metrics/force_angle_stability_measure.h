@@ -30,7 +30,7 @@ template <typename Scalar, typename DataStruct>
 class ForceAngleStabilityMargin : public StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>
 {
 public:
-  ForceAngleStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum)
+  ForceAngleStabilityMargin(MinimumFunction<Scalar> minimum_function = standardMinimum)
     : StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>(minimum_function)
   {}
   /*!

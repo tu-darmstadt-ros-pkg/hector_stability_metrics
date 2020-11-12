@@ -27,7 +27,7 @@ template <typename Scalar>
 using MinimumFunction = std::function<Scalar(const std::vector<Scalar>&)>;
 
 template <typename Scalar>
-Scalar StandardMinimum(const std::vector<Scalar>& values)
+Scalar standardMinimum(const std::vector<Scalar>& values)
 {
   Scalar min_value = values[0];
 
@@ -39,7 +39,7 @@ Scalar StandardMinimum(const std::vector<Scalar>& values)
 }
 
 template <typename Scalar>
-Scalar ExponentialWeightig(const std::vector<Scalar>& values, const Scalar& a, const Scalar& b, const Scalar& c)
+Scalar exponentialWeighting(const std::vector<Scalar>& values, const Scalar& a, const Scalar& b, const Scalar& c)
 {
   Scalar value = 0;
 

@@ -26,10 +26,10 @@ template <typename Scalar>
 using SignFunction = std::function<Scalar(const Scalar&)>;
 
 /**
- * @brief StandardSignum calculates the sign function according to its original definition
+ * @brief standardSignum calculates the sign function according to its original definition
  */
 template <typename Scalar>
-Scalar StandardSignum(const Scalar& value)
+Scalar standardSignum(const Scalar& value)
 {
   if (value > 0)
   {
@@ -46,43 +46,43 @@ Scalar StandardSignum(const Scalar& value)
 }
 
 /**
- * @brief DiffableExceptZeroSignum calculates the sign function in a way that can be used with autodiff, except for values equal to zero
+ * @brief differentiableExceptZeroSignum calculates the sign function in a way that can be used with autodiff, except for values equal to zero
  */
 template <typename Scalar>
-Scalar DiffableExceptZeroSignum(const Scalar& value)
+Scalar differentiableExceptZeroSignum(const Scalar& value)
 {
   return value / abs(value);
 }
 
 /**
- * @brief AlgebraicSigmoid approximates the sign function with the algebraic function f(x)=x/sqrt(x^2+epsilon) such that is continuously differentiable
+ * @brief algebraicSigmoid approximates the sign function with the algebraic function f(x)=x/sqrt(x^2+epsilon) such that is continuously differentiable
  * @param value input value
  * @param epsilon small value added to x^2 to prevent devision by zero
  */
 template <typename Scalar>
-Scalar AlgebraicSigmoid(const Scalar& value, const Scalar& epsilon)
+Scalar algebraicSigmoid(const Scalar& value, const Scalar& epsilon)
 {
   return value / sqrt(value * value + epsilon);
 }
 
 /**
- * @brief LogistigSigmoid approximates the sign function with the logistic function f(x)=1/exp(-k*x) such that is continuously differentiable
+ * @brief logisticSigmoid approximates the sign function with the logistic function f(x)=1/exp(-k*x) such that is continuously differentiable
  * @param value input value
  * @param k scale parameter to adjust the steepness of the logistic function
  */
 template <typename Scalar>
-Scalar LogistigSigmoid(const Scalar& value, const Scalar& k)
+Scalar logisticSigmoid(const Scalar& value, const Scalar& k)
 {
   return 1 / exp(-k * value);
 }
 
 /**
- * @brief TanhSigmoid approximates the sign function with the tangens hyperbolicus f(x)=tanh(kx) such that is continuously differentiable
+ * @brief tanhSigmoid approximates the sign function with the tangens hyperbolicus f(x)=tanh(kx) such that is continuously differentiable
  * @param value input value
  * @param k scale parameter to adjust the steepness of the logistic function
  */
 template <typename Scalar>
-Scalar TanhSigmoid(const Scalar& value, const Scalar& k)
+Scalar tanhSigmoid(const Scalar& value, const Scalar& k)
 {
   return tanh(k * value);
 }

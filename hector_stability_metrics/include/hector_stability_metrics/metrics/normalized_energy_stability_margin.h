@@ -39,7 +39,7 @@ public:
    * approximating it the stability values for unstable edges will be negative. As the sign function is not contiously differentiable it is recommended to use an approximation when
    * this metric is used for gradient based optimization.
    */
-  NormalizedEnergyStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum, SignFunction<Scalar> sign_function = ConstantOne)
+  NormalizedEnergyStabilityMargin(MinimumFunction<Scalar> minimum_function = standardMinimum, SignFunction<Scalar> sign_function = ConstantOne)
     : StabilityMetricBase<NormalizedEnergyStabilityMargin<Scalar, DataStruct>>(minimum_function)
   {
     sign_function_ = sign_function;

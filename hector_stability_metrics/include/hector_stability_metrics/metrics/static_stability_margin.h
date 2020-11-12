@@ -32,7 +32,7 @@ public:
    * @param minimum_function The minimum function that should be used for determining the overall stability.
    * @param use_signed_version If set to false the original unsigened version as defined by Garcia and De Santos is used.
    */
-  StaticStabilityMargin(MinimumFunction<Scalar> minimum_function = StandardMinimum)
+  StaticStabilityMargin(MinimumFunction<Scalar> minimum_function = standardMinimum)
     : StabilityMetricBase<StaticStabilityMargin<Scalar, DataStruct>>(minimum_function)
   {}
 

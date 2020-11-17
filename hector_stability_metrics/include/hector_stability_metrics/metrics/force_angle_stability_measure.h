@@ -18,57 +18,88 @@
 #ifndef HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H
 #define HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H
 
-#include "hector_stability_metrics/support_polygon.h"
-#include "hector_stability_metrics/types.h"
-#include "hector_stability_metrics/metrics/stability_metric_base.h"
+#include "hector_stability_metrics/math/normalization.h"
+#include "hector_stability_metrics/metrics/common.h"
 
 #include <Eigen/Geometry>
 
 namespace hector_stability_metrics
 {
-template <typename Scalar, typename DataStruct>
-class ForceAngleStabilityMargin : public StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>
+
+/*!
+  * Computes the Force Angle Stability Measure (Papadopoulos, Rey, 1996) for the given support polygon and returns the
+  * index of the least stable axis.
+  * The stabilities for each axis are stored in the stability_vector. Previous values are overwritten.
+  * 
+  * @tparam Scalar The scalar type used for computations.
+  * @tparam DataStruct A data struct with additional information required by the stability measure.
+  * 
+  * @param support_polygon A support polygon where it is assumed that the points are ordered clockwise when viewed from above.
+  * @param data In this case a method named @b centerOfMass returning a Vector3<Scalar> representing the center of mass and a method @b externalForce returning a Vector3<Scalar> representing the sum of all forces acting on the center of mass are required.
+ *   Optionally, you can also provide a method normalizationFactor returning a Scalar normalization factor that is applied to all edges.
+  * @param edge_stabilities Output vector for the stability values for all edges of the support polygon
+  */
+template<typename Scalar, typename DataStruct>
+void computeForceAngleStabilityMeasure( const SupportPolygon<Scalar> &support_polygon, const DataStruct &data,
+                                        std::vector<Scalar> &edge_stabilities )
 {
-public:
-  ForceAngleStabilityMargin(MinimumFunction<Scalar> minimum_function = standardMinimum)
-    : StabilityMetricBase<ForceAngleStabilityMargin<Scalar, DataStruct>>(minimum_function)
-  {}
-  /*!
-   * Computes the Force Angle Stability Measure (Papadopoulos, Rey, 1996) for the given support polygon and returns the
-   * index of the least stable axis.
-   * The stabilities for each axis are stored in the stability_vector. Previous values are overwritten.
-   * @param support_polygon A support polygon where it is assumed that the points are ordered clockwise when viewed from
-   * above.
-   * @param data A data struct containing all addition
-   * @param stability_vector A vector containting the stability values for all edges of the support polygon
-   */
-  void computeStabilityValueForAllEdgesImpl(const SupportPolygon<Scalar>& support_polygon, const DataStruct& data, std::vector<Scalar>& stability_vector)
+  const size_t number_of_edges = support_polygon.size();
+  edge_stabilities.resize( number_of_edges );
+
+  for ( size_t i = 0; i < number_of_edges; ++i )
   {
-    stability_vector.resize(support_polygon.size());
-
-    for (size_t i = 0; i < support_polygon.size(); ++i)
-    {
-      size_t b = i + 1;
-      if (b == support_polygon.size())
-        b = 0;
-      Vector3<Scalar> axis = (support_polygon[b] - support_polygon[i]).normalized();
-      Eigen::Matrix<Scalar, 3, 3> projection = Eigen::Matrix<Scalar, 3, 3>::Identity() - axis * axis.transpose();
-      Vector3<Scalar> axis_normal = projection * (support_polygon[b] - data.com);
-      // Since the mass normally doesn't change, we omit it
-      Vector3<Scalar> force_component = projection * data.external_force;
-      Scalar force_component_norm = force_component.norm();
-      Vector3<Scalar> force_component_normalized = force_component / force_component_norm;
-      Scalar distance = (-axis_normal + axis_normal.dot(force_component_normalized) * force_component_normalized).norm();
-      axis_normal.normalize();
-      Scalar sigma = axis_normal.cross(force_component_normalized).dot(axis) < 0 ? 1 : -1;
-      Scalar theta = sigma * std::acos(force_component_normalized.dot(axis_normal));
-      Scalar beta = theta * distance * force_component_norm;
-      stability_vector[i] = beta * data.normalization_factor;
-    }
+    const Vector3<Scalar> &axis = (getSupportPolygonEdge( support_polygon, i )).normalized();
+    const Matrix3<Scalar> &projection = Matrix3<Scalar>::Identity() - axis * axis.transpose();
+    Vector3<Scalar> axis_normal = projection * (support_polygon[i] - data.centerOfMass());
+    // Since the mass normally doesn't change, we omit it
+    const Vector3<Scalar> &force_component = projection * data.externalForce();
+    const Scalar force_component_norm = force_component.norm();
+    const Vector3<Scalar> &force_component_normalized = force_component / force_component_norm;
+    const Scalar distance = (-axis_normal +
+                             axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
+    axis_normal.normalize();
+    // TODO: Use atan2 formulation
+    const Scalar sigma = axis_normal.cross( force_component_normalized ).dot( axis ) < 0 ? 1 : -1;
+    const Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ));
+    const Scalar beta = theta * distance * force_component_norm;
+    edge_stabilities[i] = normalize( beta, data );
   }
-};
+}
 
-STABLITY_CREATE_DERIVED_METRIC_TRAITS(ForceAngleStabilityMargin)
+template<typename Scalar, typename DataStruct>
+Scalar computeForceAngleStabilityMeasureLeastStableEdgeValue( const SupportPolygon<Scalar> &support_polygon,
+                                                              const DataStruct &data,
+                                                              std::vector<Scalar> &edge_stabilities,
+                                                              size_t &least_stable_edge )
+{
+  return computeLeastStableEdgeValue<Scalar, DataStruct, computeForceAngleStabilityMeasure<Scalar, DataStruct>>(
+    support_polygon, data, edge_stabilities, least_stable_edge );
+}
+
+template<typename Scalar, typename DataStruct>
+Scalar computeForceAngleStabilityMeasureLeastStableEdgeValue(
+  const SupportPolygonWithStabilities<Scalar> &support_polygon, const DataStruct &data, size_t &least_stable_edge )
+{
+  return computeLeastStableEdgeValue<Scalar, DataStruct, computeForceAngleStabilityMeasure<Scalar, DataStruct>>(
+    support_polygon, data, least_stable_edge );
+}
+
+template<typename Scalar, typename DataStruct, math::MinimumFunction<Scalar> minimum = math::standardMinimum<Scalar>>
+Scalar computeForceAngleStabilityMeasureMinimumStabilityValue( const SupportPolygon<Scalar> &support_polygon,
+                                                               const DataStruct &data,
+                                                               std::vector<Scalar> &edge_stabilities )
+{
+  return computeMinimumStabilityValue<Scalar, DataStruct, computeForceAngleStabilityMeasure<Scalar, DataStruct>, minimum>(
+    support_polygon, data, edge_stabilities );
+}
+
+template<typename Scalar, typename DataStruct, math::MinimumFunction<Scalar> minimum = math::standardMinimum<Scalar>>
+Scalar computeForceAngleStabilityMeasureMinimumStabilityValue(
+  const SupportPolygonWithStabilities<Scalar> &support_polygon, const DataStruct &data )
+{
+  return computeMinimumStabilityValue<Scalar, DataStruct, computeForceAngleStabilityMeasure<Scalar, DataStruct>, minimum>(
+    support_polygon, data );
+}
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H

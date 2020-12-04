@@ -35,8 +35,8 @@ struct SupportPolygonWithStabilities
   //! The convex hull of the contact points of the robot with the ground. The contact points should be ordered clockwise
   //! when viewed from above.
   SupportPolygon<Scalar> contact_hull_points;
-  //! The stability of each axis. Index 0 is the stability of the axis from hull point 0 to hull point 1.
-  std::vector<Scalar> axis_stabilities;
+  //! The stability of each edge. Index 0 is the stability of the edge from hull point 0 to hull point 1.
+  std::vector<Scalar> edge_stabilities;
 };
 
 using SupportPolygonWithStabilitiesf = SupportPolygonWithStabilities<float>;

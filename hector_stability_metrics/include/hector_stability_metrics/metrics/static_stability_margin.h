@@ -18,79 +18,157 @@
 #ifndef HECTOR_STABILITY_METRICS_METRICS_STATIC_STABILITY_MARGIN_H
 #define HECTOR_STABILITY_METRICS_METRICS_STATIC_STABILITY_MARGIN_H
 
-#include "hector_stability_metrics/support_polygon.h"
-#include "hector_stability_metrics/types.h"
+#include "hector_stability_metrics/metrics/common.h"
 
 namespace hector_stability_metrics
 {
 
-/** @brief This method computes the Static Stability Margin defined in "On the Stability Properties of Quadruped Creeping Gaits" (McGhee, Frank, 1968).
+/*!
+ * @defgroup SSM Static Stability Margin
+ * @brief These methods compute the Static Stability Margin defined in "On the Stability Properties of Quadruped Creeping Gaits" (McGhee, Frank, 1968).
  * 
  * @tparam Scalar The scalar type used for computations.
- * @tparam DataStruct A data struct with additional information required by the stability measure.
  * 
  * @param support_polygon A support polygon where it is assumed that the points are ordered clockwise when viewed from
  * above.
- * @param data In this case a method named @b centerOfMass returning a Vector3<Scalar> representing the center of mass is required.
- *   Optionally, you can also provide a method normalizationFactor returning a Scalar normalization factor that is applied to all edges.
- * @param edge_stabilities Output vector for the stability values for all edges of the support polygon
+ * @param center_of_mass A Vector3<Scalar> representing the center of mass is required.
+ * @param normalization_factor Optionally, you can also provide a Scalar normalization factor that is applied to all edges.
+ *
+ * @{
  */
-template<typename Scalar, typename DataStruct>
-void computeStaticStabilityMargin( const SupportPolygon <Scalar> &support_polygon, const DataStruct &data,
-                                   std::vector<Scalar> &edge_stabilities )
+/*!
+ * @param edge_stabilities Output vector for the stability values for each edge in the support_polygon. Existing content is erased.
+ */
+template<typename Scalar>
+void computeStaticStabilityMargin( SupportPolygon<Scalar> &support_polygon, std::vector<Scalar> &edge_stabilities,
+                                   const Vector3<Scalar> &center_of_mass, Scalar normalization_factor = Scalar( 1 ));
+
+template<typename Scalar>
+void computeStaticStabilityMargin( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                   const Vector3<Scalar> &center_of_mass, Scalar normalization_factor = Scalar( 1 ));
+
+/*!
+ * @param edge_stabilities Output vector for the stability values for each edge in the support_polygon. Existing content is erased.
+ * @return The minimum stability value of all edges.
+ */
+template<typename Scalar>
+Scalar computeStaticStabilityMarginValue( SupportPolygon<Scalar> &support_polygon,
+                                          std::vector<Scalar> &edge_stabilities,
+                                          const Vector3<Scalar> &center_of_mass,
+                                          Scalar normalization_factor = Scalar( 1 ));
+
+/*!
+ * @return The minimum stability value of all edges.
+ */
+template<typename Scalar>
+Scalar computeStaticStabilityMarginValue( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                          const Vector3<Scalar> &center_of_mass,
+                                          Scalar normalization_factor = Scalar( 1 ));
+
+/*!
+ * @param edge_stabilities Output vector for the stability values for each edge in the support_polygon. Existing content is erased.
+ * @return The index of the minimum stability value of all edges.
+ */
+template<typename Scalar>
+size_t computeStaticStabilityMarginLeastStableEdgeIndex( SupportPolygon<Scalar> &support_polygon,
+                                                         std::vector<Scalar> &edge_stabilities,
+                                                         const Vector3<Scalar> &center_of_mass,
+                                                         Scalar normalization_factor = Scalar( 1 ));
+
+/*!
+ * @return The index of the minimum stability value of all edges.
+ */
+template<typename Scalar>
+size_t computeStaticStabilityMarginLeastStableEdgeIndex( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                                         const Vector3<Scalar> &center_of_mass,
+                                                         Scalar normalization_factor = Scalar( 1 ));
+
+/*! @} */
+
+namespace impl
+{
+template<typename Scalar, typename MinimumType = Scalar, typename MinimumSelector = MinimumSelector<Scalar, MinimumType>>
+typename MinimumSelector::ReturnType computeStaticStabilityMargin( const SupportPolygon<Scalar> &support_polygon,
+                                                                   std::vector<Scalar> &edge_stabilities,
+                                                                   const Vector3<Scalar> &center_of_mass,
+                                                                   Scalar normalization_factor = Scalar( 1 ))
 {
   const size_t number_of_edges = support_polygon.size();
   edge_stabilities.resize( number_of_edges );
+  MinimumSelector minimum_selector;
 
   Matrix3<Scalar> project_2d = Matrix3<Scalar>::Zero();
   project_2d( 0, 0 ) = 1;
   project_2d( 1, 1 ) = 1;
-  const Vector3<Scalar> &projected_com = project_2d * data.centerOfMass();
+  const Vector3<Scalar> &projected_com = project_2d * center_of_mass;
   for ( int i = 0; i < number_of_edges; i++ )
   {
     const Vector3<Scalar> &edge = getSupportPolygonEdge( support_polygon, i );
     const Vector3<Scalar> &projected_edge = project_2d * edge;
     const Vector3<Scalar> &projected_edge_point = project_2d * support_polygon[i];
 
-    Scalar signed_distance_to_edge = (projected_edge.normalized().cross( projected_edge_point - projected_com ))( 2 );
-    edge_stabilities[i] = normalize( signed_distance_to_edge, data );
+    const Scalar signed_distance_to_edge = (projected_edge.normalized().cross( projected_edge_point - projected_com ))(
+      2 );
+    const Scalar value = normalization_factor * signed_distance_to_edge;
+    edge_stabilities[i] = signed_distance_to_edge;
+    minimum_selector.updateMinimum( i, value );
   }
+  return minimum_selector.getMinimum();
+}
 }
 
-template<typename Scalar, typename DataStruct>
-Scalar computeStaticStabilityMarginLeastStableEdgeValue( const SupportPolygon <Scalar> &support_polygon,
-                                                         const DataStruct &data, std::vector<Scalar> &edge_stabilities,
-                                                         size_t &least_stable_edge )
+template<typename Scalar>
+void computeStaticStabilityMargin( SupportPolygon<Scalar> &support_polygon, std::vector<Scalar> &edge_stabilities,
+                                   const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  return computeLeastStableEdgeValue<Scalar, DataStruct, computeStaticStabilityMargin<Scalar, DataStruct>>(
-    support_polygon, data, edge_stabilities, least_stable_edge );
+  impl::computeStaticStabilityMargin<Scalar, void>( support_polygon, edge_stabilities,
+                                                    center_of_mass, normalization_factor );
 }
 
-template<typename Scalar, typename DataStruct>
-Scalar computeStaticStabilityMarginLeastStableEdgeValue( const SupportPolygonWithStabilities <Scalar> &support_polygon,
-                                                         const DataStruct &data, size_t &least_stable_edge )
+template<typename Scalar>
+void computeStaticStabilityMargin( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                   const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  return computeLeastStableEdgeValue<Scalar, DataStruct, computeStaticStabilityMargin<Scalar, DataStruct>>(
-    support_polygon, data, least_stable_edge );
+  impl::computeStaticStabilityMargin<Scalar, void>( support_polygon.contact_hull_points,
+                                                    support_polygon.edge_stabilities,
+                                                    center_of_mass, normalization_factor );
 }
 
-template<typename Scalar, typename DataStruct, math::MinimumFunction <Scalar> minimum = math::standardMinimum < Scalar>>
-
-Scalar computeStaticStabilityMarginMinimumStabilityValue( const SupportPolygon <Scalar> &support_polygon,
-                                                          const DataStruct &data,
-                                                          std::vector<Scalar> &edge_stabilities )
+template<typename Scalar>
+Scalar computeStaticStabilityMarginValue( SupportPolygon<Scalar> &support_polygon,
+                                          std::vector<Scalar> &edge_stabilities, const Vector3<Scalar> &center_of_mass,
+                                          Scalar normalization_factor )
 {
-  return computeMinimumStabilityValue<Scalar, DataStruct, computeStaticStabilityMargin<Scalar, DataStruct>, minimum>(
-    support_polygon, data, edge_stabilities );
+  impl::computeStaticStabilityMargin<Scalar>( support_polygon, edge_stabilities,
+                                              center_of_mass, normalization_factor );
 }
 
-template<typename Scalar, typename DataStruct, math::MinimumFunction <Scalar> minimum = math::standardMinimum < Scalar>>
-
-Scalar computeStaticStabilityMarginMinimumStabilityValue( const SupportPolygonWithStabilities <Scalar> &support_polygon,
-                                                          const DataStruct &data )
+template<typename Scalar>
+Scalar computeStaticStabilityMarginValue( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                          const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  return computeMinimumStabilityValue<Scalar, DataStruct, computeStaticStabilityMargin<Scalar, DataStruct>, minimum>(
-    support_polygon, data );
+  impl::computeStaticStabilityMargin<Scalar>( support_polygon.contact_hull_points, support_polygon.edge_stabilities,
+                                              center_of_mass, normalization_factor );
+}
+
+template<typename Scalar>
+size_t computeStaticStabilityMarginLeastStableEdgeIndex( SupportPolygon<Scalar> &support_polygon,
+                                                         std::vector<Scalar> &edge_stabilities,
+                                                         const Vector3<Scalar> &center_of_mass,
+                                                         Scalar normalization_factor )
+{
+  impl::computeStaticStabilityMargin<Scalar, size_t>( support_polygon, edge_stabilities,
+                                                      center_of_mass, normalization_factor );
+}
+
+template<typename Scalar>
+size_t computeStaticStabilityMarginLeastStableEdgeIndex( SupportPolygonWithStabilities<Scalar> &support_polygon,
+                                                         const Vector3<Scalar> &center_of_mass,
+                                                         Scalar normalization_factor )
+{
+  impl::computeStaticStabilityMargin<Scalar, size_t>( support_polygon.contact_hull_points,
+                                                      support_polygon.edge_stabilities,
+                                                      center_of_mass, normalization_factor );
 }
 }  // namespace hector_stability_metrics
 

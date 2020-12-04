@@ -36,13 +36,12 @@ TEST( StabilityMeasures, getLeastStableEdgeValue )
 
 TEST( StabilityMeasures, StaticStabilityMargin )
 {
-  CenterOfMassData<double> cd;
-  cd.center_of_mass = Vector3d( 0.2, 0.7, 1 );
+  Vector3d center_of_mass = Vector3d( 0.2, 0.7, 1 );
 
   SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
-  double stability_res = computeStaticStabilityMarginMinimumStabilityValue( sup_pol, cd, edge_stabilities );
+  double stability_res = computeStaticStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
   EXPECT_NEAR( edge_stabilities[0], 0.2, FLOATING_POINT_TOLLERANCE );
   EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLLERANCE );
@@ -51,8 +50,8 @@ TEST( StabilityMeasures, StaticStabilityMargin )
 
   EXPECT_NEAR( stability_res, 0.2, FLOATING_POINT_TOLLERANCE );
 
-  cd.center_of_mass = Vector3d( -0.2, 0.7, 1 );
-  stability_res = computeStaticStabilityMarginMinimumStabilityValue( sup_pol, cd, edge_stabilities );
+  center_of_mass = Vector3d( -0.2, 0.7, 1 );
+  stability_res = computeStaticStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
   EXPECT_NEAR( edge_stabilities[0], -0.2, FLOATING_POINT_TOLLERANCE );
   EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLLERANCE );
@@ -64,13 +63,12 @@ TEST( StabilityMeasures, StaticStabilityMargin )
 
 TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
 {
-  CenterOfMassData<double> cd;
-  cd.center_of_mass = Vector3d( 0.2, 0.7, 1 );
+  Vector3d center_of_mass = Vector3d( 0.2, 0.7, 1 );
 
   SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
-  double stability_res = computeNormalizedEnergyStabilityMarginMinimumStabilityValue( sup_pol, cd, edge_stabilities );
+  double stability_res = computeNormalizedEnergyStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
   EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLLERANCE );
   EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLLERANCE );
@@ -79,8 +77,8 @@ TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
 
   EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLLERANCE );
 
-  cd.center_of_mass = Vector3d( -0.2, 0.7, 1 );
-  stability_res = computeNormalizedEnergyStabilityMarginMinimumStabilityValue( sup_pol, cd, edge_stabilities );
+  center_of_mass = Vector3d( -0.2, 0.7, 1 );
+  stability_res = computeNormalizedEnergyStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
   EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLLERANCE );
   EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLLERANCE );
@@ -90,21 +88,16 @@ TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
   EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLLERANCE );
 }
 
-template<typename Scalar>
-struct ForceAngleData : public CenterOfMassData<Scalar>, public ForceData<Scalar>
-{
-};
-
 TEST( StabilityMeasures, ForceAngleStabilityMeasure )
 {
-  ForceAngleData<double> data;
-  data.center_of_mass = Vector3d( 0.5, 0.5, 1 );
-  data.external_force = Vector3d( 0, 0, -9.81 );
+  Vector3d center_of_mass = Vector3d( 0.5, 0.5, 1 );
+  Vector3d external_force = Vector3d( 0, 0, -9.81 );
 
   SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 1, 0 ), Vector3d( 1, 1, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
-  double stability = computeForceAngleStabilityMeasureMinimumStabilityValue( sup_pol, data, edge_stabilities );
+  double stability = computeForceAngleStabilityMeasureValue( sup_pol, edge_stabilities, center_of_mass,
+                                                             external_force );
 }
 
 int main( int argc, char **argv )

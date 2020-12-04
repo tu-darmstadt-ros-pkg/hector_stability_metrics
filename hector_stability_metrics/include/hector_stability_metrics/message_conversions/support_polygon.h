@@ -125,7 +125,7 @@ visualization_msgs::MarkerArray supportPolygonToMarkerArray( const SupportPolygo
     axis_msg.points.push_back( start );
     axis_msg.points.push_back( end );
     axis_msg.scale.x = axis_msg.scale.y = axis_msg.scale.z = 0.025;
-    axis_msg.color = color_mapper( 1 - support_polygon.axis_stabilities[i] );
+    axis_msg.color = color_mapper( 1 - support_polygon.edge_stabilities[i] );
     axis_msg.color.a = 0.5f;
     support_polygon_msg.markers.push_back( axis_msg );
   }

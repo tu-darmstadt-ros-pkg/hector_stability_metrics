@@ -74,7 +74,7 @@ template<typename Scalar>
 Scalar getLeastStableEdgeValue( const SupportPolygonWithStabilities<Scalar> &support_polygon,
                                 size_t &least_stable_edge )
 {
-  return getLeastStableEdgeValue( support_polygon.axis_stabilities, least_stable_edge );
+  return getLeastStableEdgeValue( support_polygon.edge_stabilities, least_stable_edge );
 }
 
 //! @brief Finds and returns the value of the edge with the lowest stability.
@@ -89,7 +89,7 @@ Scalar getLeastStableEdgeValue( const std::vector<Scalar> &edge_stabilities )
 template<typename Scalar>
 Scalar getLeastStableEdgeValue( const SupportPolygonWithStabilities<Scalar> &support_polygon )
 {
-  return getLeastStableEdgeValue( support_polygon.axis_stabilities );
+  return getLeastStableEdgeValue( support_polygon.edge_stabilities );
 }
 }  // namespace hector_stability_metrics
 

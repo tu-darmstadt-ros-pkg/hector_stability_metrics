@@ -139,6 +139,16 @@ computeNormalizedEnergyStabilityMargin( const SupportPolygon<Scalar> &support_po
 }
 
 template<typename Scalar, math::SignFunction<Scalar> signFunction>
+void computeNormalizedEnergyStabilityMargin( SupportPolygon<Scalar> &support_polygon,
+                                             std::vector<Scalar> &edge_stabilities,
+                                             const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
+{
+  impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction, void>( support_polygon.contact_hull_points,
+                                                                            support_polygon.edge_stabilities,
+                                                                            center_of_mass, normalization_factor );
+}
+
+template<typename Scalar, math::SignFunction<Scalar> signFunction>
 void computeNormalizedEnergyStabilityMargin( SupportPolygonWithStabilities<Scalar> &support_polygon,
                                              const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
@@ -152,17 +162,17 @@ Scalar computeNormalizedEnergyStabilityMarginValue( SupportPolygon<Scalar> &supp
                                                     std::vector<Scalar> &edge_stabilities,
                                                     const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction>( support_polygon, edge_stabilities,
-                                                                      center_of_mass, normalization_factor );
+  return impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction>( support_polygon, edge_stabilities,
+                                                                             center_of_mass, normalization_factor );
 }
 
 template<typename Scalar, math::SignFunction<Scalar> signFunction>
 Scalar computeNormalizedEnergyStabilityMarginValue( SupportPolygonWithStabilities<Scalar> &support_polygon,
                                                     const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction>( support_polygon.contact_hull_points,
-                                                                      support_polygon.edge_stabilities,
-                                                                      center_of_mass, normalization_factor );
+  return impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction>( support_polygon.contact_hull_points,
+                                                                             support_polygon.edge_stabilities,
+                                                                             center_of_mass, normalization_factor );
 }
 
 template<typename Scalar, math::SignFunction<Scalar> signFunction>
@@ -171,8 +181,9 @@ size_t computeNormalizedEnergyStabilityMarginLeastStableEdgeIndex( SupportPolygo
                                                                    const Vector3<Scalar> &center_of_mass,
                                                                    Scalar normalization_factor )
 {
-  impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction, size_t>( support_polygon, edge_stabilities,
-                                                                              center_of_mass, normalization_factor );
+  return impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction, size_t>( support_polygon, edge_stabilities,
+                                                                                     center_of_mass,
+                                                                                     normalization_factor );
 }
 
 template<typename Scalar, math::SignFunction<Scalar> signFunction>
@@ -180,9 +191,10 @@ size_t computeNormalizedEnergyStabilityMarginLeastStableEdgeIndex(
   SupportPolygonWithStabilities<Scalar> &support_polygon, const Vector3<Scalar> &center_of_mass,
   Scalar normalization_factor )
 {
-  impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction, size_t>( support_polygon.contact_hull_points,
-                                                                              support_polygon.edge_stabilities,
-                                                                              center_of_mass, normalization_factor );
+  return impl::computeNormalizedEnergyStabilityMargin<Scalar, signFunction, size_t>(
+    support_polygon.contact_hull_points,
+    support_polygon.edge_stabilities,
+    center_of_mass, normalization_factor );
 }
 }  // namespace hector_stability_metrics
 

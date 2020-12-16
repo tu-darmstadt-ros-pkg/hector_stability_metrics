@@ -139,16 +139,17 @@ Scalar computeStaticStabilityMarginValue( SupportPolygon<Scalar> &support_polygo
                                           std::vector<Scalar> &edge_stabilities, const Vector3<Scalar> &center_of_mass,
                                           Scalar normalization_factor )
 {
-  impl::computeStaticStabilityMargin<Scalar>( support_polygon, edge_stabilities,
-                                              center_of_mass, normalization_factor );
+  return impl::computeStaticStabilityMargin<Scalar>( support_polygon, edge_stabilities,
+                                                     center_of_mass, normalization_factor );
 }
 
 template<typename Scalar>
 Scalar computeStaticStabilityMarginValue( SupportPolygonWithStabilities<Scalar> &support_polygon,
                                           const Vector3<Scalar> &center_of_mass, Scalar normalization_factor )
 {
-  impl::computeStaticStabilityMargin<Scalar>( support_polygon.contact_hull_points, support_polygon.edge_stabilities,
-                                              center_of_mass, normalization_factor );
+  return impl::computeStaticStabilityMargin<Scalar>( support_polygon.contact_hull_points,
+                                                     support_polygon.edge_stabilities,
+                                                     center_of_mass, normalization_factor );
 }
 
 template<typename Scalar>
@@ -157,8 +158,8 @@ size_t computeStaticStabilityMarginLeastStableEdgeIndex( SupportPolygon<Scalar> 
                                                          const Vector3<Scalar> &center_of_mass,
                                                          Scalar normalization_factor )
 {
-  impl::computeStaticStabilityMargin<Scalar, size_t>( support_polygon, edge_stabilities,
-                                                      center_of_mass, normalization_factor );
+  return impl::computeStaticStabilityMargin<Scalar, size_t>( support_polygon, edge_stabilities,
+                                                             center_of_mass, normalization_factor );
 }
 
 template<typename Scalar>

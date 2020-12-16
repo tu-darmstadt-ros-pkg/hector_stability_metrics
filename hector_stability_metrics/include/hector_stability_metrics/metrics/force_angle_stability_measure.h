@@ -163,9 +163,8 @@ Scalar computeForceAngleStabilityMeasureValue( SupportPolygon<Scalar> &support_p
                                                const Vector3<Scalar> &external_force,
                                                Scalar normalization_factor )
 {
-  impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon,
-                                                   edge_stabilities,
-                                                   center_of_mass, external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon, edge_stabilities,
+                                                          center_of_mass, external_force, normalization_factor );
 }
 
 template<typename Scalar>
@@ -174,9 +173,9 @@ Scalar computeForceAngleStabilityMeasureValue( SupportPolygonWithStabilities<Sca
                                                const Vector3<Scalar> &external_force,
                                                Scalar normalization_factor )
 {
-  impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon.contact_hull_points,
-                                                   support_polygon.edge_stabilities,
-                                                   center_of_mass, external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon.contact_hull_points,
+                                                          support_polygon.edge_stabilities,
+                                                          center_of_mass, external_force, normalization_factor );
 }
 
 template<typename Scalar>
@@ -186,8 +185,8 @@ size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( SupportPolygon<Sca
                                                               const Vector3<Scalar> &external_force,
                                                               Scalar normalization_factor )
 {
-  impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon, edge_stabilities, center_of_mass,
-                                                           external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon, edge_stabilities, center_of_mass,
+                                                                  external_force, normalization_factor );
 }
 
 template<typename Scalar>
@@ -196,9 +195,10 @@ size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( SupportPolygonWith
                                                               const Vector3<Scalar> &external_force,
                                                               Scalar normalization_factor )
 {
-  impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon.contact_hull_points,
-                                                           support_polygon.edge_stabilities,
-                                                           center_of_mass, external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon.contact_hull_points,
+                                                                  support_polygon.edge_stabilities,
+                                                                  center_of_mass, external_force,
+                                                                  normalization_factor );
 }
 }  // namespace hector_stability_metrics
 

@@ -1,24 +1,9 @@
-/*
- * Copyright (C) 2020  Felix Biemüller, Stefan Fabian
- *
- * This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2020 Felix Biemüller, Stefan Fabian. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #ifndef HECTOR_STABILITY_METRICS_MINIMUM_FUNCTIONS_H
 #define HECTOR_STABILITY_METRICS_MINIMUM_FUNCTIONS_H
 
-#include "hector_stability_metrics/support_polygon.h"
 #include <vector>
 #include <math.h>
 #include <functional>
@@ -48,7 +33,7 @@ Scalar standardMinimum( const std::vector<Scalar> &values )
 
   for ( int i = 1; i < values.size(); i++ )
   {
-    min_value = std::min( min_value, values[i] );
+    min_value = std::fmin( min_value, values[i] );
   }
   return min_value;
 }
@@ -60,7 +45,7 @@ Scalar exponentialWeighting( const std::vector<Scalar> &values, const Scalar &a,
 
   for ( int i = 0; i < values.size(); i++ )
   {
-    value += exp( -(b * values[i] + c));
+    value += std::exp( -(b * values[i] + c));
   }
   return value * a / values.size();
 }

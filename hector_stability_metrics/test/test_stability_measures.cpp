@@ -1,19 +1,5 @@
-/*
- * Copyright (C) 2020  Stefan Fabian, Martin Oehler, Felix Biemüller
- *
- * This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2020 Stefan Fabian, Martin Oehler, Felix Biemüller. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "eigen_tests.h"
 #include <hector_stability_metrics/metrics/force_angle_stability_measure.h>
@@ -38,7 +24,7 @@ TEST( StabilityMeasures, StaticStabilityMargin )
 {
   Vector3d center_of_mass = Vector3d( 0.2, 0.7, 1 );
 
-  SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
+  Vector3dList sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
   double stability_res = computeStaticStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
@@ -65,7 +51,7 @@ TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
 {
   Vector3d center_of_mass = Vector3d( 0.2, 0.7, 1 );
 
-  SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
+  Vector3dList sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 2, 0 ), Vector3d( 1, 2, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
   double stability_res = computeNormalizedEnergyStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
@@ -88,16 +74,17 @@ TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
   EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLLERANCE );
 }
 
-TEST( StabilityMeasures, ForceAngleStabilityMeasure )
+TEST( StabilityMeasures, ForceAngleStabilityMeasureNonDifferentiable )
 {
   Vector3d center_of_mass = Vector3d( 0.5, 0.5, 1 );
   Vector3d external_force = Vector3d( 0, 0, -9.81 );
 
-  SupportPolygond sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 1, 0 ), Vector3d( 1, 1, 0 ), Vector3d( 1, 0, 0 ) };
+  Vector3dList sup_pol = { Vector3d( 0, 0, 0 ), Vector3d( 0, 1, 0 ), Vector3d( 1, 1, 0 ), Vector3d( 1, 0, 0 ) };
   std::vector<double> edge_stabilities;
 
-  double stability = computeForceAngleStabilityMeasureValue( sup_pol, edge_stabilities, center_of_mass,
-                                                             external_force );
+  double stability = non_differentiable::computeForceAngleStabilityMeasureValue( sup_pol, edge_stabilities,
+                                                                                 center_of_mass,
+                                                                                 external_force );
 }
 
 int main( int argc, char **argv )

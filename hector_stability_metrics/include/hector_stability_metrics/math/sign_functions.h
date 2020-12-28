@@ -11,47 +11,50 @@ namespace hector_stability_metrics
 {
 namespace math
 {
-template<typename Scalar>
-using SignFunction = Scalar( const Scalar & );
+template <typename Scalar>
+using SignFunction = Scalar(const Scalar&);
 
 /**
  * @brief standardSignum calculates the sign function according to its original definition
  */
-template<typename Scalar>
-Scalar standardSignum( const Scalar &value )
+template <typename Scalar>
+Scalar standardSignum(const Scalar& value)
 {
-  if ( value > 0 )
+  if (value > 0)
   {
-    return Scalar( 1 );
+    return Scalar(1);
   }
-  else if ( value == 0 )
+  else if (value == 0)
   {
-    return Scalar( 0 );
+    return Scalar(0);
   }
   else
   {
-    return Scalar( -1 );
+    return Scalar(-1);
   }
 }
 
-//! @brief Standard signbit implementation. Quickest but unlike standardSignum it may return 1 or -1 for 0. 
-template<typename Scalar>
-Scalar quickSignum( const Scalar &value )
+//! @brief Standard signbit implementation. Quickest but unlike standardSignum it may return 1 or -1 for 0.
+template <typename Scalar>
+Scalar quickSignum(const Scalar& value)
 {
-  return std::signbit( value ) ? -1 : 1;
+  return std::signbit(value) ? -1 : 1;
 }
 
 //! @brief Constant one. Can be used e.g. in the Normalized Energy Stability Measure to obtain the original unsigned version defined by Garcia and De Santos.
-template<typename Scalar>
-Scalar constantOneSignum( const Scalar & ) { return Scalar( 1 ); }
+template <typename Scalar>
+Scalar constantOneSignum(const Scalar&)
+{
+  return Scalar(1);
+}
 
 /**
  * @brief differentiableExceptZeroSignum calculates the sign function in a way that can be used with autodiff, except for values equal to zero
  */
-template<typename Scalar>
-Scalar differentiableExceptZeroSignum( const Scalar &value )
+template <typename Scalar>
+Scalar differentiableExceptZeroSignum(const Scalar& value)
 {
-  return value / abs( value );
+  return value / abs(value);
 }
 
 /**
@@ -59,10 +62,10 @@ Scalar differentiableExceptZeroSignum( const Scalar &value )
  * @param value input value
  * @param epsilon small value added to x^2 to prevent devision by zero
  */
-template<typename Scalar>
-Scalar algebraicSigmoid( const Scalar &value, const Scalar &epsilon )
+template <typename Scalar>
+Scalar algebraicSigmoid(const Scalar& value, const Scalar& epsilon)
 {
-  return value / sqrt( value * value + epsilon );
+  return value / sqrt(value * value + epsilon);
 }
 
 /**
@@ -70,10 +73,10 @@ Scalar algebraicSigmoid( const Scalar &value, const Scalar &epsilon )
  * @param value input value
  * @param k scale parameter to adjust the steepness of the logistic function
  */
-template<typename Scalar>
-Scalar logisticSigmoid( const Scalar &value, const Scalar &k )
+template <typename Scalar>
+Scalar logisticSigmoid(const Scalar& value, const Scalar& k)
 {
-  return 1 / exp( -k * value );
+  return 1 / exp(-k * value);
 }
 
 /**
@@ -81,11 +84,11 @@ Scalar logisticSigmoid( const Scalar &value, const Scalar &k )
  * @param value input value
  * @param k scale parameter to adjust the steepness of the logistic function
  */
-template<typename Scalar>
-Scalar tanhSigmoid( const Scalar &value, const Scalar &k )
+template <typename Scalar>
+Scalar tanhSigmoid(const Scalar& value, const Scalar& k)
 {
-  return tanh( k * value );
+  return tanh(k * value);
 }
-}
+}  // namespace math
 }  // namespace hector_stability_metrics
 #endif  // HECTOR_STABILITY_METRICS_SIGN_FUNCTIONS_H

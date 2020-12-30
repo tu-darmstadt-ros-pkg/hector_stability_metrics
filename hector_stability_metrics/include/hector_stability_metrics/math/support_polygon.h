@@ -5,7 +5,7 @@
 #define HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H
 
 #include "hector_stability_metrics/math/hull.h"
-#include "hector_stability_metrics/types.h"
+#include "hector_stability_metrics/math/types.h"
 
 namespace hector_stability_metrics
 {

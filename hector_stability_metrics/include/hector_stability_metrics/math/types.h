@@ -10,6 +10,8 @@
 
 namespace hector_stability_metrics
 {
+namespace math
+{
 template<typename Scalar>
 using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
 using Matrix3f = Matrix3<float>;
@@ -46,6 +48,7 @@ template<typename Scalar>
 using Isometry3 = Eigen::Transform<Scalar, 3, Eigen::Isometry>;
 using Isometry3f = Isometry3<float>;
 using Isometry3d = Isometry3<double>;
+}
 }  // namespace hector_stability_metrics
 
 #endif  // HECTOR_STABILITY_METRICS_TYPES_H

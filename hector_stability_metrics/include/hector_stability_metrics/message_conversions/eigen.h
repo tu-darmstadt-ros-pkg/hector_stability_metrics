@@ -4,7 +4,7 @@
 #ifndef HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_EIGEN_H
 #define HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_EIGEN_H
 
-#include "hector_stability_metrics/types.h"
+#include "hector_stability_metrics/math/types.h"
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Transform.h>
@@ -19,46 +19,46 @@ namespace hector_stability_metrics
 namespace message_conversions
 {
 template<typename Scalar>
-Vector3<Scalar> msgToVector( const geometry_msgs::Point &msg )
+inline math::Vector3<Scalar> msgToVector( const geometry_msgs::Point &msg )
 {
   return { static_cast<Scalar>(msg.x), static_cast<Scalar>(msg.y),
            static_cast<Scalar>(msg.z) };
 }
 
 template<typename Scalar>
-Vector3<Scalar> msgToVector( const geometry_msgs::Vector3 &msg )
+inline math::Vector3<Scalar> msgToVector( const geometry_msgs::Vector3 &msg )
 {
   return { static_cast<Scalar>(msg.x), static_cast<Scalar>(msg.y),
            static_cast<Scalar>(msg.z) };
 }
 
 template<typename Scalar>
-Eigen::Quaternion<Scalar> msgToQuaternion( const geometry_msgs::Quaternion &msg )
+inline Eigen::Quaternion<Scalar> msgToQuaternion( const geometry_msgs::Quaternion &msg )
 {
   return { static_cast<Scalar>(msg.w), static_cast<Scalar>(msg.x),
            static_cast<Scalar>(msg.y), static_cast<Scalar>(msg.z) };
 }
 
 template<typename Scalar>
-Isometry3<Scalar> msgToTransform( const geometry_msgs::Pose &msg )
+inline math::Isometry3<Scalar> msgToTransform( const geometry_msgs::Pose &msg )
 {
-  Isometry3<Scalar> transform = Isometry3<Scalar>::Identity();
+  math::Isometry3<Scalar> transform = math::Isometry3<Scalar>::Identity();
   transform.linear() = msgToQuaternion<Scalar>( msg.orientation ).toRotationMatrix();
   transform.translation() = msgToVector<Scalar>( msg.position );
   return transform;
 }
 
 template<typename Scalar>
-Isometry3<Scalar> msgToTransform( const geometry_msgs::Transform &msg )
+inline math::Isometry3<Scalar> msgToTransform( const geometry_msgs::Transform &msg )
 {
-  Isometry3<Scalar> transform = Isometry3<Scalar>::Identity();
+  math::Isometry3<Scalar> transform = math::Isometry3<Scalar>::Identity();
   transform.linear() = msgToQuaternion<Scalar>( msg.rotation ).toRotationMatrix();
   transform.translation() = msgToVector<Scalar>( msg.translation );
   return transform;
 }
 
 template<typename Derived>
-geometry_msgs::Point vectorToPointMsg( const Eigen::DenseBase<Derived> &vec )
+inline geometry_msgs::Point vectorToPointMsg( const Eigen::DenseBase<Derived> &vec )
 {
   geometry_msgs::Point msg;
   msg.x = vec.x();
@@ -68,7 +68,7 @@ geometry_msgs::Point vectorToPointMsg( const Eigen::DenseBase<Derived> &vec )
 }
 
 template<typename Derived>
-geometry_msgs::Vector3 vectorToVectorMsg( const Eigen::DenseBase<Derived> &vec )
+inline geometry_msgs::Vector3 vectorToVectorMsg( const Eigen::DenseBase<Derived> &vec )
 {
   geometry_msgs::Vector3 msg;
   msg.x = vec.x();
@@ -78,7 +78,7 @@ geometry_msgs::Vector3 vectorToVectorMsg( const Eigen::DenseBase<Derived> &vec )
 }
 
 template<typename Scalar>
-geometry_msgs::Quaternion quaternionToMsg( const Eigen::Quaternion<Scalar> &q )
+inline geometry_msgs::Quaternion quaternionToMsg( const Eigen::Quaternion<Scalar> &q )
 {
   geometry_msgs::Quaternion msg;
   msg.w = q.w();
@@ -89,7 +89,7 @@ geometry_msgs::Quaternion quaternionToMsg( const Eigen::Quaternion<Scalar> &q )
 }
 
 template<typename Scalar>
-geometry_msgs::Pose transformToPoseMsg( const Isometry3<Scalar> &pose )
+inline geometry_msgs::Pose transformToPoseMsg( const math::Isometry3<Scalar> &pose )
 {
   geometry_msgs::Pose msg;
   msg.position = vectorToPointMsg( pose.translation());
@@ -98,7 +98,7 @@ geometry_msgs::Pose transformToPoseMsg( const Isometry3<Scalar> &pose )
 }
 
 template<typename Scalar>
-geometry_msgs::Transform transformToTransformMsg( const Isometry3<Scalar> &pose )
+inline geometry_msgs::Transform transformToTransformMsg( const math::Isometry3<Scalar> &pose )
 {
   geometry_msgs::Transform msg;
   msg.translation = vectorToVectorMsg( pose.translation());

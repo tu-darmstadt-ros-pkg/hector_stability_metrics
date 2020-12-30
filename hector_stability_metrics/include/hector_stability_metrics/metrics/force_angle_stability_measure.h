@@ -30,26 +30,26 @@ namespace non_differentiable
  * @{
  */
 template<typename Scalar>
-void computeForceAngleStabilityMeasure( const Vector3List<Scalar> &support_polygon,
+void computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support_polygon,
                                         std::vector<Scalar> &edge_stabilities,
-                                        const Vector3<Scalar> &center_of_mass,
-                                        const Vector3<Scalar> &external_force,
+                                        const math::Vector3<Scalar> &center_of_mass,
+                                        const math::Vector3<Scalar> &external_force,
                                         Scalar normalization_factor = Scalar( 1 ));
 
 //! @return The minimum stability value of all edges.
 template<typename Scalar>
-Scalar computeForceAngleStabilityMeasureValue( const Vector3List<Scalar> &support_polygon,
+Scalar computeForceAngleStabilityMeasureValue( const math::Vector3List<Scalar> &support_polygon,
                                                std::vector<Scalar> &edge_stabilities,
-                                               const Vector3<Scalar> &center_of_mass,
-                                               const Vector3<Scalar> &external_force,
+                                               const math::Vector3<Scalar> &center_of_mass,
+                                               const math::Vector3<Scalar> &external_force,
                                                Scalar normalization_factor = Scalar( 1 ));
 
 //! @return The index of the minimum stability value of all edges.
 template<typename Scalar>
-size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const Vector3List<Scalar> &support_polygon,
+size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const math::Vector3List<Scalar> &support_polygon,
                                                               std::vector<Scalar> &edge_stabilities,
-                                                              const Vector3<Scalar> &center_of_mass,
-                                                              const Vector3<Scalar> &external_force,
+                                                              const math::Vector3<Scalar> &center_of_mass,
+                                                              const math::Vector3<Scalar> &external_force,
                                                               Scalar normalization_factor = Scalar( 1 ));
 /*! @} */
 
@@ -57,10 +57,10 @@ namespace impl
 {
 
 template<typename Scalar, typename MinimumType = Scalar, typename MinimumSelector = math::MinimumSelector<Scalar, MinimumType>>
-typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const Vector3List<Scalar> &support_polygon,
+typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support_polygon,
                                                                         std::vector<Scalar> &edge_stabilities,
-                                                                        const Vector3<Scalar> &center_of_mass,
-                                                                        const Vector3<Scalar> &external_force,
+                                                                        const math::Vector3<Scalar> &center_of_mass,
+                                                                        const math::Vector3<Scalar> &external_force,
                                                                         Scalar normalization_factor = Scalar( 1 ))
 {
   const size_t number_of_edges = support_polygon.size();
@@ -69,13 +69,13 @@ typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const Ve
 
   for ( size_t i = 0; i < number_of_edges; ++i )
   {
-    const Vector3<Scalar> &axis = (math::getSupportPolygonEdge( support_polygon, i )).normalized();
-    const Matrix3<Scalar> &projection = Matrix3<Scalar>::Identity() - axis * axis.transpose();
-    Vector3<Scalar> axis_normal = projection * (support_polygon[i] - center_of_mass);
+    const math::Vector3<Scalar> &axis = (math::getSupportPolygonEdge( support_polygon, i )).normalized();
+    const math::Matrix3<Scalar> &projection = math::Matrix3<Scalar>::Identity() - axis * axis.transpose();
+    math::Vector3<Scalar> axis_normal = projection * (support_polygon[i] - center_of_mass);
     // Since the mass normally doesn't change, we omit it
-    const Vector3<Scalar> &force_component = projection * external_force;
+    const math::Vector3<Scalar> &force_component = projection * external_force;
     const Scalar force_component_norm = force_component.norm();
-    const Vector3<Scalar> &force_component_normalized = force_component / force_component_norm;
+    const math::Vector3<Scalar> &force_component_normalized = force_component / force_component_norm;
     const Scalar distance = (-axis_normal +
                              axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
     axis_normal.normalize();
@@ -91,10 +91,10 @@ typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const Ve
 }
 
 template<typename Scalar>
-void computeForceAngleStabilityMeasure( const Vector3List<Scalar> &support_polygon,
+void computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support_polygon,
                                         std::vector<Scalar> &edge_stabilities,
-                                        const Vector3<Scalar> &center_of_mass,
-                                        const Vector3<Scalar> &external_force,
+                                        const math::Vector3<Scalar> &center_of_mass,
+                                        const math::Vector3<Scalar> &external_force,
                                         Scalar normalization_factor )
 {
   impl::computeForceAngleStabilityMeasure<Scalar, void>( support_polygon, edge_stabilities, center_of_mass,
@@ -102,10 +102,10 @@ void computeForceAngleStabilityMeasure( const Vector3List<Scalar> &support_polyg
 }
 
 template<typename Scalar>
-Scalar computeForceAngleStabilityMeasureValue( const Vector3List<Scalar> &support_polygon,
+Scalar computeForceAngleStabilityMeasureValue( const math::Vector3List<Scalar> &support_polygon,
                                                std::vector<Scalar> &edge_stabilities,
-                                               const Vector3<Scalar> &center_of_mass,
-                                               const Vector3<Scalar> &external_force,
+                                               const math::Vector3<Scalar> &center_of_mass,
+                                               const math::Vector3<Scalar> &external_force,
                                                Scalar normalization_factor )
 {
   return impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon, edge_stabilities,
@@ -113,10 +113,10 @@ Scalar computeForceAngleStabilityMeasureValue( const Vector3List<Scalar> &suppor
 }
 
 template<typename Scalar>
-size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const Vector3List<Scalar> &support_polygon,
+size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const math::Vector3List<Scalar> &support_polygon,
                                                               std::vector<Scalar> &edge_stabilities,
-                                                              const Vector3<Scalar> &center_of_mass,
-                                                              const Vector3<Scalar> &external_force,
+                                                              const math::Vector3<Scalar> &center_of_mass,
+                                                              const math::Vector3<Scalar> &external_force,
                                                               Scalar normalization_factor )
 {
   return impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon, edge_stabilities, center_of_mass,

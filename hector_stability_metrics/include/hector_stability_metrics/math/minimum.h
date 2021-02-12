@@ -46,7 +46,7 @@ Scalar exponentialWeighting(const std::vector<Scalar>& values, const Scalar& a, 
   {
     value += exp(-(b * values[i]));
   }
-  return value * a / values.size();
+  return -value * a / values.size();
 }
 
 template <typename Scalar>
@@ -58,7 +58,7 @@ Scalar logarithmicExponentialWeighting(const std::vector<Scalar>& values, const 
   {
     value += exp(-(b * values[i]));
   }
-  return log(value) * a / values.size();
+  return -log(value) * a / values.size();
 }
 
 }  // namespace math

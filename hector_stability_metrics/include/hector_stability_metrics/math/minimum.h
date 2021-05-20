@@ -30,7 +30,7 @@ Scalar standardMinimum(const std::vector<Scalar>& values)
 {
   Scalar min_value = std::numeric_limits<double>::max();
 
-  for (int i = 1; i < values.size(); i++)
+  for (int i = 0; i < values.size(); i++)
   {
     min_value = fmin(min_value, values[i]);
   }

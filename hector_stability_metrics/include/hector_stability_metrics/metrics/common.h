@@ -15,7 +15,7 @@ struct MinimumSelector
   using ReturnType = ReturnT;
   Scalar minimum = std::numeric_limits<Scalar>::quiet_NaN();
 
-  void updateMinimum( size_t index, Scalar value )
+  void updateMinimum( size_t, Scalar value )
   {
     if ( value >= minimum ) return;
     minimum = value;

@@ -7,6 +7,7 @@
 #include <hector_stability_metrics/metrics/static_stability_margin.h>
 
 using namespace hector_stability_metrics;
+using namespace hector_stability_metrics::math;
 using namespace Eigen;
 
 const double FLOATING_POINT_TOLLERANCE = 0.00001;

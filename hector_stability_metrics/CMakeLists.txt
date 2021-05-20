@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(hector_stability_metrics)
+project(hector_stability_metrics VERSION 0.8 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 11)
 
 find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
-
-set (CMAKE_BUILD_TYPE Debug)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -16,14 +15,17 @@ catkin_package(
 ###########
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE include ${EIGEN3_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(${PROJECT_NAME} INTERFACE ${EIGEN3_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
 install(TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}_Targets
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}

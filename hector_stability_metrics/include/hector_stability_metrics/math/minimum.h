@@ -13,7 +13,7 @@ namespace hector_stability_metrics
 namespace math
 {
 template <typename Scalar>
-using MinimumFunction = Scalar(const std::vector<Scalar>&);
+using MinimumFunction = std::function<Scalar(const std::vector<Scalar>&)>;
 
 template <typename Scalar>
 Scalar standardMinimum(const std::vector<Scalar>& values);

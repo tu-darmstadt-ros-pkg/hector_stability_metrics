@@ -40,7 +40,7 @@ install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
-  include_directories(${eigen_checks_INCLUDE_DIRS})
+  include_directories(${EIGEN3_INCLUDE_DIRS} ${eigen_checks_INCLUDE_DIRS})
   ## Add gtest based cpp test target and link libraries
   add_rostest_gtest(test_stability_measures test/test_stability_measures.test test/test_stability_measures.cpp)
   target_link_libraries(test_stability_measures ${PROJECT_NAME})

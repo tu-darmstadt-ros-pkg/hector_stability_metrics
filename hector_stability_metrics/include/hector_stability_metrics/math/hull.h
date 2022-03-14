@@ -39,9 +39,9 @@ inline void convexHull( const Container &points, Container &result )
 {
   size_t n = points.size();
   result.clear();
-  if ( n <= 3 )
+  if ( n <= 2 )
   {
-    result.reserve( 3 );
+    result.reserve( 2 );
     result.insert( result.begin(), points.begin(), points.end());
     return;
   }

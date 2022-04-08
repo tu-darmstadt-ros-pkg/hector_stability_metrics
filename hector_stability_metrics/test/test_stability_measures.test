@@ -1,3 +1,0 @@
-<launch>
-  <test test-name="test_stability_measures" pkg="hector_stability_metrics" type="test_stability_measures" />
-</launch>

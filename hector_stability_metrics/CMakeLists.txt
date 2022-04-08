@@ -42,7 +42,7 @@ if (CATKIN_ENABLE_TESTING)
 
   include_directories(${EIGEN3_INCLUDE_DIRS} ${eigen_checks_INCLUDE_DIRS})
   ## Add gtest based cpp test target and link libraries
-  add_rostest_gtest(test_stability_measures test/test_stability_measures.test test/test_stability_measures.cpp)
+  catkin_add_gtest(test_stability_measures test/test_stability_measures.cpp)
   target_link_libraries(test_stability_measures ${PROJECT_NAME})
 
 endif()

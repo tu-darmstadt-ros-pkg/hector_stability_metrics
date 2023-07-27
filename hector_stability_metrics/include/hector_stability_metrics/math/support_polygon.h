@@ -13,21 +13,21 @@ namespace math
 {
 
 template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-void supportPolygonFromSortedContactPoints( const Container &points, Vector3List<Scalar> &result )
+void supportPolygonFromSortedContactPoints( const Container &points, Vector3List<Scalar> &result, Scalar threshold=Scalar(0.0) )
 {
-  math::convexHull( points, result );
+  math::convexHull( points, result, threshold );
 }
 
 template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-Vector3List<Scalar> supportPolygonFromSortedContactPoints( const Container &points )
+Vector3List<Scalar> supportPolygonFromSortedContactPoints( const Container &points, Scalar threshold=Scalar(0.0) )
 {
   Vector3List<Scalar> result;
-  math::convexHull( points, result );
+  math::convexHull( points, result, threshold );
   return result;
 }
 
 template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points )
+Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points, Scalar threshold=Scalar(0.0) )
 {
   Container copy = points;
   std::sort( copy.begin(), copy.end(),
@@ -37,7 +37,7 @@ Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &po
                  return true;
                return a.y() == b.y() && a.x() < b.x();
              } );
-  return supportPolygonFromSortedContactPoints( copy );
+  return supportPolygonFromSortedContactPoints( copy, threshold );
 }
 
 /**

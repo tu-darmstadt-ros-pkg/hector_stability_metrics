@@ -19,10 +19,10 @@ inline bool isClockwiseTurn( const T ox, const T oy, const T ax, const T ay, con
 }
 
 template<typename MatrixBase1, typename MatrixBase2, typename MatrixBase3>
-inline bool isClockwiseTurn( const MatrixBase1 &o, const MatrixBase2 &a, const MatrixBase3 &b )
+inline bool isClockwiseTurn( const MatrixBase1 &o, const MatrixBase2 &a, const MatrixBase3 &b, typename MatrixBase1::value_type threshold=typename MatrixBase1::value_type(0.0) )
 {
   // It's a counter clockwise turn if (ax - ox) * (by - oy) - (ay - oy) * (bx - ox) is greater than 0
-  return (a.x() - o.x()) * (b.y() - o.y()) < (a.y() - o.y()) * (b.x() - o.x());
+  return (a.x() - o.x()) * (b.y() - o.y()) < (a.y() - o.y()) * (b.x() - o.x()) - threshold;
 }
 
 /*!
@@ -34,8 +34,8 @@ inline bool isClockwiseTurn( const MatrixBase1 &o, const MatrixBase2 &a, const M
   * @param points The candidate points for which the hull is computed
   * @param hull The convex hull formed by a subset of the give points. The points are listed in clockwise order.
   */
-template<typename Container>
-inline void convexHull( const Container &points, Container &result )
+template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+inline void convexHull( const Container &points, Container &result, Scalar threshold=Scalar(0.0) )
 {
   size_t n = points.size();
   result.clear();
@@ -50,13 +50,13 @@ inline void convexHull( const Container &points, Container &result )
   result.resize( 2 * n );
   for ( size_t i = 0; i < n; ++i, ++k )
   {
-    while ( k >= 2 && !isClockwiseTurn( result[k - 2], result[k - 1], points[i] )) --k;
+    while ( k >= 2 && !isClockwiseTurn( result[k - 2], result[k - 1], points[i], threshold )) --k;
     result[k] = points[i];
   }
   for ( size_t i = n, t = k + 1; i > 0; --i, ++k )
   {
     const auto &pt = points[i - 1];
-    while ( k >= t && !isClockwiseTurn( result[k - 2], result[k - 1], pt )) --k;
+    while ( k >= t && !isClockwiseTurn( result[k - 2], result[k - 1], pt, threshold )) --k;
     result[k] = pt;
   }
   result.resize( k - 1 );

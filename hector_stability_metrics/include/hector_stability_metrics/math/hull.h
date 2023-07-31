@@ -32,7 +32,8 @@ inline bool isClockwiseTurn( const MatrixBase1 &o, const MatrixBase2 &a, const M
   * reducing costly allocations.
   *
   * @param points The candidate points for which the hull is computed
-  * @param hull The convex hull formed by a subset of the give points. The points are listed in clockwise order.
+  * @param result The convex hull formed by a subset of the given points. The points are listed in clockwise order.
+  * @param threshold Positive values increase the strictness for determining convexity and, therefore, simplify the support polygon.
   */
 template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 inline void convexHull( const Container &points, Container &result, Scalar threshold=Scalar(0.0) )

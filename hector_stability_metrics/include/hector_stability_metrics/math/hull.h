@@ -12,10 +12,10 @@ namespace math
 {
 
 template<typename T>
-inline bool isClockwiseTurn( const T ox, const T oy, const T ax, const T ay, const T bx, const T by )
+inline bool isClockwiseTurn( const T ox, const T oy, const T ax, const T ay, const T bx, const T by, T threshold=T(0.0) )
 {
   // It's a counter clockwise turn if (ax - ox) * (by - oy) - (ay - oy) * (bx - ox) is greater than 0
-  return (ax - ox) * (by - oy) < (ay - oy) * (bx - ox);
+  return (ax - ox) * (by - oy) < (ay - oy) * (bx - ox) - threshold;
 }
 
 template<typename MatrixBase1, typename MatrixBase2, typename MatrixBase3>

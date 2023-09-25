@@ -44,6 +44,8 @@ if (CATKIN_ENABLE_TESTING)
   ## Add gtest based cpp test target and link libraries
   catkin_add_gtest(test_stability_measures test/test_stability_measures.cpp)
   target_link_libraries(test_stability_measures ${PROJECT_NAME})
+  catkin_add_gtest(test_convex_hull test/test_convex_hull.cpp)
+  target_link_libraries(test_convex_hull ${PROJECT_NAME})
 
 endif()
 

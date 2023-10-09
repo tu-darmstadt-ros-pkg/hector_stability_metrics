@@ -12,28 +12,33 @@ namespace hector_stability_metrics
 namespace math
 {
 
-template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-void supportPolygonFromSortedContactPoints( const Container &points, Vector3List<Scalar> &result, Scalar threshold=Scalar(0.0) )
+template<typename Container,
+         typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+void supportPolygonFromSortedContactPoints( const Container &points, Vector3List<Scalar> &result,
+                                            Scalar threshold = Scalar( 0.0 ) )
 {
   math::convexHull( points, result, threshold );
 }
 
-template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-Vector3List<Scalar> supportPolygonFromSortedContactPoints( const Container &points, Scalar threshold=Scalar(0.0) )
+template<typename Container,
+         typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+Vector3List<Scalar> supportPolygonFromSortedContactPoints( const Container &points,
+                                                           Scalar threshold = Scalar( 0.0 ) )
 {
   Vector3List<Scalar> result;
   math::convexHull( points, result, threshold );
   return result;
 }
 
-template<typename Container, typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points, Scalar threshold=Scalar(0.0) )
+template<typename Container,
+         typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
+Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points,
+                                                             Scalar threshold = Scalar( 0.0 ) )
 {
   Container copy = points;
   std::sort( copy.begin(), copy.end(),
-             []( const typename Container::value_type &a, const typename Container::value_type &b )
-             {
-               if ( a.y() < b.y())
+             []( const typename Container::value_type &a, const typename Container::value_type &b ) {
+               if ( a.y() < b.y() )
                  return true;
                return a.y() == b.y() && a.x() < b.x();
              } );
@@ -49,16 +54,15 @@ Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &po
 template<typename Scalar>
 Vector3<Scalar> getSupportPolygonEdge( const Vector3List<Scalar> &support_polygon, size_t index )
 {
-  assert( index < support_polygon.size());
+  assert( index < support_polygon.size() );
 
   size_t next_index = index + 1;
-  if ( next_index == support_polygon.size())
-  {
+  if ( next_index == support_polygon.size() ) {
     next_index = 0;
   }
-  return (support_polygon[next_index] - support_polygon[index]);
+  return ( support_polygon[next_index] - support_polygon[index] );
 }
-}  // namespace math
-}  // namespace hector_stability_metrics
+} // namespace math
+} // namespace hector_stability_metrics
 
-#endif  // HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H
+#endif // HECTOR_STABILITY_METRICS_SUPPORT_POLYGON_H

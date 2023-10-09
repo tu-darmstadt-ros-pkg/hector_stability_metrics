@@ -6,37 +6,35 @@
 
 #include "hector_stability_metrics/math/types.h"
 
+#include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Transform.h>
-#include <Eigen/Geometry>
 
 namespace hector_stability_metrics
 {
 /*!
- * IMPORTANT: These conversion methods are provided as headers but the library does not depend on the message types.
- *   Hence, make sure that your project depends on them if you use them.
+ * IMPORTANT: These conversion methods are provided as headers but the library does not depend on
+ * the message types. Hence, make sure that your project depends on them if you use them.
  */
 namespace message_conversions
 {
 template<typename Scalar>
 inline math::Vector3<Scalar> msgToVector( const geometry_msgs::Point &msg )
 {
-  return { static_cast<Scalar>(msg.x), static_cast<Scalar>(msg.y),
-           static_cast<Scalar>(msg.z) };
+  return { static_cast<Scalar>( msg.x ), static_cast<Scalar>( msg.y ), static_cast<Scalar>( msg.z ) };
 }
 
 template<typename Scalar>
 inline math::Vector3<Scalar> msgToVector( const geometry_msgs::Vector3 &msg )
 {
-  return { static_cast<Scalar>(msg.x), static_cast<Scalar>(msg.y),
-           static_cast<Scalar>(msg.z) };
+  return { static_cast<Scalar>( msg.x ), static_cast<Scalar>( msg.y ), static_cast<Scalar>( msg.z ) };
 }
 
 template<typename Scalar>
 inline Eigen::Quaternion<Scalar> msgToQuaternion( const geometry_msgs::Quaternion &msg )
 {
-  return { static_cast<Scalar>(msg.w), static_cast<Scalar>(msg.x),
-           static_cast<Scalar>(msg.y), static_cast<Scalar>(msg.z) };
+  return { static_cast<Scalar>( msg.w ), static_cast<Scalar>( msg.x ), static_cast<Scalar>( msg.y ),
+           static_cast<Scalar>( msg.z ) };
 }
 
 template<typename Scalar>
@@ -92,8 +90,8 @@ template<typename Scalar>
 inline geometry_msgs::Pose transformToPoseMsg( const math::Isometry3<Scalar> &pose )
 {
   geometry_msgs::Pose msg;
-  msg.position = vectorToPointMsg( pose.translation());
-  msg.orientation = quaternionToMsg( Eigen::Quaternion<Scalar>( pose.linear()));
+  msg.position = vectorToPointMsg( pose.translation() );
+  msg.orientation = quaternionToMsg( Eigen::Quaternion<Scalar>( pose.linear() ) );
   return msg;
 }
 
@@ -101,11 +99,11 @@ template<typename Scalar>
 inline geometry_msgs::Transform transformToTransformMsg( const math::Isometry3<Scalar> &pose )
 {
   geometry_msgs::Transform msg;
-  msg.translation = vectorToVectorMsg( pose.translation());
-  msg.rotation = quaternionToMsg( Eigen::Quaternion<Scalar>( pose.linear()));
+  msg.translation = vectorToVectorMsg( pose.translation() );
+  msg.rotation = quaternionToMsg( Eigen::Quaternion<Scalar>( pose.linear() ) );
   return msg;
 }
-}  // namespace message_conversions
-}  // namespace hector_stability_metrics
+} // namespace message_conversions
+} // namespace hector_stability_metrics
 
-#endif  // HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_EIGEN_H
+#endif // HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_EIGEN_H

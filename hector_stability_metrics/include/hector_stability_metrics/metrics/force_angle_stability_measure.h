@@ -34,7 +34,7 @@ void computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support
                                         std::vector<Scalar> &edge_stabilities,
                                         const math::Vector3<Scalar> &center_of_mass,
                                         const math::Vector3<Scalar> &external_force,
-                                        Scalar normalization_factor = Scalar( 1 ));
+                                        Scalar normalization_factor = Scalar( 1 ) );
 
 //! @return The minimum stability value of all edges.
 template<typename Scalar>
@@ -42,45 +42,46 @@ Scalar computeForceAngleStabilityMeasureValue( const math::Vector3List<Scalar> &
                                                std::vector<Scalar> &edge_stabilities,
                                                const math::Vector3<Scalar> &center_of_mass,
                                                const math::Vector3<Scalar> &external_force,
-                                               Scalar normalization_factor = Scalar( 1 ));
+                                               Scalar normalization_factor = Scalar( 1 ) );
 
 //! @return The index of the minimum stability value of all edges.
 template<typename Scalar>
-size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const math::Vector3List<Scalar> &support_polygon,
-                                                              std::vector<Scalar> &edge_stabilities,
-                                                              const math::Vector3<Scalar> &center_of_mass,
-                                                              const math::Vector3<Scalar> &external_force,
-                                                              Scalar normalization_factor = Scalar( 1 ));
+size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex(
+    const math::Vector3List<Scalar> &support_polygon, std::vector<Scalar> &edge_stabilities,
+    const math::Vector3<Scalar> &center_of_mass, const math::Vector3<Scalar> &external_force,
+    Scalar normalization_factor = Scalar( 1 ) );
 /*! @} */
 
 namespace impl
 {
 
-template<typename Scalar, typename MinimumType = Scalar, typename MinimumSelector = math::MinimumSelector<Scalar, MinimumType>>
-typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support_polygon,
-                                                                        std::vector<Scalar> &edge_stabilities,
-                                                                        const math::Vector3<Scalar> &center_of_mass,
-                                                                        const math::Vector3<Scalar> &external_force,
-                                                                        Scalar normalization_factor = Scalar( 1 ))
+template<typename Scalar, typename MinimumType = Scalar,
+         typename MinimumSelector = math::MinimumSelector<Scalar, MinimumType>>
+typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure(
+    const math::Vector3List<Scalar> &support_polygon, std::vector<Scalar> &edge_stabilities,
+    const math::Vector3<Scalar> &center_of_mass, const math::Vector3<Scalar> &external_force,
+    Scalar normalization_factor = Scalar( 1 ) )
 {
   const size_t number_of_edges = support_polygon.size();
   edge_stabilities.resize( number_of_edges );
   MinimumSelector minimum_selector;
 
-  for ( size_t i = 0; i < number_of_edges; ++i )
-  {
-    const math::Vector3<Scalar> &axis = (math::getSupportPolygonEdge( support_polygon, i )).normalized();
-    const math::Matrix3<Scalar> &projection = math::Matrix3<Scalar>::Identity() - axis * axis.transpose();
-    math::Vector3<Scalar> axis_normal = projection * (support_polygon[i] - center_of_mass);
+  for ( size_t i = 0; i < number_of_edges; ++i ) {
+    const math::Vector3<Scalar> &axis =
+        ( math::getSupportPolygonEdge( support_polygon, i ) ).normalized();
+    const math::Matrix3<Scalar> &projection =
+        math::Matrix3<Scalar>::Identity() - axis * axis.transpose();
+    math::Vector3<Scalar> axis_normal = projection * ( support_polygon[i] - center_of_mass );
     // Since the mass normally doesn't change, we omit it
     const math::Vector3<Scalar> &force_component = projection * external_force;
     const Scalar force_component_norm = force_component.norm();
     const math::Vector3<Scalar> &force_component_normalized = force_component / force_component_norm;
-    const Scalar distance = (-axis_normal +
-                             axis_normal.dot( force_component_normalized ) * force_component_normalized).norm();
+    const Scalar distance =
+        ( -axis_normal + axis_normal.dot( force_component_normalized ) * force_component_normalized )
+            .norm();
     axis_normal.normalize();
     const Scalar sigma = axis_normal.cross( force_component_normalized ).dot( axis ) < 0 ? 1 : -1;
-    const Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ));
+    const Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ) );
     const Scalar beta = theta * distance * force_component_norm;
     const Scalar value = beta * normalization_factor;
     edge_stabilities[i] = value;
@@ -88,7 +89,7 @@ typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure( const ma
   }
   return minimum_selector.getMinimum();
 }
-}
+} // namespace impl
 
 template<typename Scalar>
 void computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support_polygon,
@@ -97,8 +98,8 @@ void computeForceAngleStabilityMeasure( const math::Vector3List<Scalar> &support
                                         const math::Vector3<Scalar> &external_force,
                                         Scalar normalization_factor )
 {
-  impl::computeForceAngleStabilityMeasure<Scalar, void>( support_polygon, edge_stabilities, center_of_mass,
-                                                         external_force, normalization_factor );
+  impl::computeForceAngleStabilityMeasure<Scalar, void>(
+      support_polygon, edge_stabilities, center_of_mass, external_force, normalization_factor );
 }
 
 template<typename Scalar>
@@ -108,21 +109,20 @@ Scalar computeForceAngleStabilityMeasureValue( const math::Vector3List<Scalar> &
                                                const math::Vector3<Scalar> &external_force,
                                                Scalar normalization_factor )
 {
-  return impl::computeForceAngleStabilityMeasure<Scalar>( support_polygon, edge_stabilities,
-                                                          center_of_mass, external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar>(
+      support_polygon, edge_stabilities, center_of_mass, external_force, normalization_factor );
 }
 
 template<typename Scalar>
-size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex( const math::Vector3List<Scalar> &support_polygon,
-                                                              std::vector<Scalar> &edge_stabilities,
-                                                              const math::Vector3<Scalar> &center_of_mass,
-                                                              const math::Vector3<Scalar> &external_force,
-                                                              Scalar normalization_factor )
+size_t computeForceAngleStabilityMeasureLeastStableEdgeIndex(
+    const math::Vector3List<Scalar> &support_polygon, std::vector<Scalar> &edge_stabilities,
+    const math::Vector3<Scalar> &center_of_mass, const math::Vector3<Scalar> &external_force,
+    Scalar normalization_factor )
 {
-  return impl::computeForceAngleStabilityMeasure<Scalar, size_t>( support_polygon, edge_stabilities, center_of_mass,
-                                                                  external_force, normalization_factor );
+  return impl::computeForceAngleStabilityMeasure<Scalar, size_t>(
+      support_polygon, edge_stabilities, center_of_mass, external_force, normalization_factor );
 }
-}  // non_differentiable
-}  // namespace hector_stability_metrics
+} // namespace non_differentiable
+} // namespace hector_stability_metrics
 
-#endif  // HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H
+#endif // HECTOR_STABILITY_METRICS_FORCE_ANGLE_STABILITY_MEASURE_H

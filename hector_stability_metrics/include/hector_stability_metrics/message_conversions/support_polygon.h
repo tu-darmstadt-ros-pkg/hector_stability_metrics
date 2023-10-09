@@ -10,8 +10,8 @@
 namespace hector_stability_metrics
 {
 /*!
- * IMPORTANT: These conversion methods are provided as headers but the library does not depend on the message types.
- *   Hence, make sure that your project depends on them if you use them.
+ * IMPORTANT: These conversion methods are provided as headers but the library does not depend on
+ * the message types. Hence, make sure that your project depends on them if you use them.
  */
 namespace message_conversions
 {
@@ -21,63 +21,48 @@ using ColorMapper = std::function<std_msgs::ColorRGBA( Scalar )>;
 
 /*!
  * Converts a value from 0 to 1 to an RGB color from blue to red.
- * Implemented following the colour ramping for data visualisation approach described by Paul Bourke:
- * http://paulbourke.net/miscellaneous/colourspace/
+ * Implemented following the colour ramping for data visualisation approach described by Paul
+ * Bourke: http://paulbourke.net/miscellaneous/colourspace/
  */
 template<typename Scalar>
 inline std_msgs::ColorRGBA intensityToColor( Scalar value )
 {
   std_msgs::ColorRGBA color;
   color.a = 1.0f;
-  if ( value < 0 )
-  {
+  if ( value < 0 ) {
     color.g = 1;
-  }
-  else if ( value > 1 )
-  {
+  } else if ( value > 1 ) {
     color.r = 1;
-  }
-  else if ( value <= 0.25 )
-  {
+  } else if ( value <= 0.25 ) {
     color.g = 4 * value;
     color.b = 1;
-  }
-  else if ( value <= 0.5 )
-  {
+  } else if ( value <= 0.5 ) {
     color.g = 1;
     color.b = 2 - 4 * value;
-  }
-  else if ( value <= 0.75 )
-  {
+  } else if ( value <= 0.75 ) {
     color.r = 4 * value - 2;
     color.g = 1;
-  }
-  else if ( std::isfinite( value ))
-  {
+  } else if ( std::isfinite( value ) ) {
     color.r = 1;
     color.g = 4 - 4 * value;
-  }
-  else
-  {
+  } else {
     color.r = color.g = color.b = 0.6;
   }
   return color;
 }
 
 template<typename Scalar>
-inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
-                                                                    const std::vector<Scalar> &edge_stabilities,
-                                                                    const std::string &robot_frame,
-                                                                    const std_msgs::ColorRGBA &contact_marker_color,
-                                                                    const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
+inline visualization_msgs::MarkerArray supportPolygonToMarkerArray(
+    const math::Vector3List<Scalar> &support_polygon, const std::vector<Scalar> &edge_stabilities,
+    const std::string &robot_frame, const std_msgs::ColorRGBA &contact_marker_color,
+    const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
 {
   visualization_msgs::MarkerArray support_polygon_msg;
   visualization_msgs::Marker delete_marker;
   delete_marker.header.frame_id = robot_frame;
   delete_marker.action = visualization_msgs::Marker::DELETEALL;
   support_polygon_msg.markers.push_back( delete_marker );
-  for ( size_t i = 0; i < support_polygon.size(); ++i )
-  {
+  for ( size_t i = 0; i < support_polygon.size(); ++i ) {
     const math::Vector3<Scalar> &contact_point = support_polygon[i];
     visualization_msgs::Marker contact_point_msg;
     contact_point_msg.header.frame_id = robot_frame;
@@ -94,7 +79,8 @@ inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::
 
     visualization_msgs::Marker axis_msg;
     size_t b = i + 1;
-    if ( b == support_polygon.size()) b = 0;
+    if ( b == support_polygon.size() )
+      b = 0;
     axis_msg.header.frame_id = robot_frame;
     axis_msg.ns = "support_polygon_axis";
     axis_msg.id = i;
@@ -120,49 +106,49 @@ inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::
 }
 
 template<typename Scalar>
-inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
-                                                                    const std::vector<Scalar> &edge_stabilities,
-                                                                    const std::string &robot_frame,
-                                                                    const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
+inline visualization_msgs::MarkerArray
+supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
+                             const std::vector<Scalar> &edge_stabilities,
+                             const std::string &robot_frame,
+                             const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
 {
   std_msgs::ColorRGBA color;
   color.r = color.g = 0;
   color.b = 1;
   color.a = 0.5;
-  return supportPolygonToMarkerArray<Scalar>( support_polygon, edge_stabilities, robot_frame, color, color_mapper );
-}
-
-template<typename Scalar>
-inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
-                                                                    const std::vector<Scalar> &edge_stabilities,
-                                                                    const math::Isometry3<Scalar> &pose,
-                                                                    const std::string &world_frame,
-                                                                    const std_msgs::ColorRGBA &contact_marker_color,
-                                                                    const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
-{
-  auto copy = support_polygon;
-  for ( auto &cp : copy )
-  {
-    cp = pose * cp;
-  }
-  return supportPolygonToMarkerArray( copy, edge_stabilities, world_frame, contact_marker_color, color_mapper );
-}
-
-template<typename Scalar>
-inline visualization_msgs::MarkerArray supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
-                                                                    const std::vector<Scalar> &edge_stabilities,
-                                                                    const math::Isometry3<Scalar> &pose,
-                                                                    const std::string &world_frame,
-                                                                    const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
-{
-  std_msgs::ColorRGBA color;
-  color.r = color.g = 0;
-  color.b = 1;
-  color.a = 0.5;
-  return supportPolygonToMarkerArray<Scalar>( support_polygon, edge_stabilities, pose, world_frame, color,
+  return supportPolygonToMarkerArray<Scalar>( support_polygon, edge_stabilities, robot_frame, color,
                                               color_mapper );
 }
-}// namespace message_conversions
-}// namespace hector_stability_metrics
 
-#endif// HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_SUPPORT_POLYGON_H
+template<typename Scalar>
+inline visualization_msgs::MarkerArray
+supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
+                             const std::vector<Scalar> &edge_stabilities,
+                             const math::Isometry3<Scalar> &pose, const std::string &world_frame,
+                             const std_msgs::ColorRGBA &contact_marker_color,
+                             const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
+{
+  auto copy = support_polygon;
+  for ( auto &cp : copy ) { cp = pose * cp; }
+  return supportPolygonToMarkerArray( copy, edge_stabilities, world_frame, contact_marker_color,
+                                      color_mapper );
+}
+
+template<typename Scalar>
+inline visualization_msgs::MarkerArray
+supportPolygonToMarkerArray( const math::Vector3List<Scalar> &support_polygon,
+                             const std::vector<Scalar> &edge_stabilities,
+                             const math::Isometry3<Scalar> &pose, const std::string &world_frame,
+                             const ColorMapper<Scalar> &color_mapper = intensityToColor<Scalar> )
+{
+  std_msgs::ColorRGBA color;
+  color.r = color.g = 0;
+  color.b = 1;
+  color.a = 0.5;
+  return supportPolygonToMarkerArray<Scalar>( support_polygon, edge_stabilities, pose, world_frame,
+                                              color, color_mapper );
+}
+} // namespace message_conversions
+} // namespace hector_stability_metrics
+
+#endif // HECTOR_STABILITY_METRICS_MESSAGE_CONVERSIONS_SUPPORT_POLYGON_H

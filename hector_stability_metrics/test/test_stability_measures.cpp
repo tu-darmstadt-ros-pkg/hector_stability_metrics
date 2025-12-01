@@ -10,7 +10,7 @@ using namespace hector_stability_metrics;
 using namespace hector_stability_metrics::math;
 using namespace Eigen;
 
-const double FLOATING_POINT_TOLLERANCE = 0.00001;
+const double FLOATING_POINT_TOLERANCE = 0.00001;
 
 TEST( StabilityMeasures, getLeastStableEdgeValue )
 {
@@ -32,22 +32,22 @@ TEST( StabilityMeasures, StaticStabilityMargin )
   double stability_res =
       computeStaticStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
-  EXPECT_NEAR( edge_stabilities[0], 0.2, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[2], 0.8, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[3], 0.7, FLOATING_POINT_TOLLERANCE );
+  EXPECT_NEAR( edge_stabilities[0], 0.2, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[2], 0.8, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[3], 0.7, FLOATING_POINT_TOLERANCE );
 
-  EXPECT_NEAR( stability_res, 0.2, FLOATING_POINT_TOLLERANCE );
+  EXPECT_NEAR( stability_res, 0.2, FLOATING_POINT_TOLERANCE );
 
   center_of_mass = Vector3d( -0.2, 0.7, 1 );
   stability_res = computeStaticStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
-  EXPECT_NEAR( edge_stabilities[0], -0.2, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[2], 1.2, FLOATING_POINT_TOLLERANCE );
-  EXPECT_NEAR( edge_stabilities[3], 0.7, FLOATING_POINT_TOLLERANCE );
+  EXPECT_NEAR( edge_stabilities[0], -0.2, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[1], 1.3, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[2], 1.2, FLOATING_POINT_TOLERANCE );
+  EXPECT_NEAR( edge_stabilities[3], 0.7, FLOATING_POINT_TOLERANCE );
 
-  EXPECT_NEAR( stability_res, -0.2, FLOATING_POINT_TOLLERANCE );
+  EXPECT_NEAR( stability_res, -0.2, FLOATING_POINT_TOLERANCE );
 }
 
 TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
@@ -62,22 +62,22 @@ TEST( StabilityMeasures, NormalizedEnergyStabilityMargin )
       computeNormalizedEnergyStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
 
   // TODO: Martin said he'd write these
-  //  EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[2], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[3], 0, FLOATING_POINT_TOLLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[2], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[3], 0, FLOATING_POINT_TOLERANCE );
   //
-  //  EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLLERANCE );
+  //  EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLERANCE );
   //
   //  center_of_mass = Vector3d( -0.2, 0.7, 1 );
   //  stability_res = computeNormalizedEnergyStabilityMarginValue( sup_pol, edge_stabilities, center_of_mass );
   //
-  //  EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[2], 0, FLOATING_POINT_TOLLERANCE );
-  //  EXPECT_NEAR( edge_stabilities[3], 0, FLOATING_POINT_TOLLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[0], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[1], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[2], 0, FLOATING_POINT_TOLERANCE );
+  //  EXPECT_NEAR( edge_stabilities[3], 0, FLOATING_POINT_TOLERANCE );
   //
-  //  EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLLERANCE );
+  //  EXPECT_NEAR( stability_res, 0, FLOATING_POINT_TOLERANCE );
 }
 
 TEST( StabilityMeasures, ForceAngleStabilityMeasureNonDifferentiable )

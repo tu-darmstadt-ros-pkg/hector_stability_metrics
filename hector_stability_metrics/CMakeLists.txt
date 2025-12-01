@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
-project(hector_stability_metrics VERSION 0.8 LANGUAGES CXX)
+project(
+  hector_stability_metrics
+  VERSION 0.8
+  LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,57 +10,47 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-##############
-## Library  ##
-##############
+# ##############################################################################
+# Library  ##
+# ##############################################################################
 
 # Header-only interface library
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_include_directories(${PROJECT_NAME} INTERFACE
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
+target_include_directories(
+  ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                            $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE
-        Eigen3::Eigen
-)
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 
-################
-##  Install   ##
-################
+# ##############################################################################
+# Install   ##
+# ##############################################################################
 
 install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT export_${PROJECT_NAME}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-)
+  TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 
-install(
-        DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION include/${PROJECT_NAME}
-)
+install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION include/${PROJECT_NAME})
 
-#############
-## Testing ##
-#############
+# ##############################################################################
+# Testing ##
+# ##############################################################################
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(test_stability_measures
-          test/test_stability_measures.cpp
-  )
+  ament_add_gtest(test_stability_measures test/test_stability_measures.cpp)
   if(TARGET test_stability_measures)
     target_link_libraries(test_stability_measures ${PROJECT_NAME})
-    target_include_directories(test_stability_measures PRIVATE ${EIGEN3_INCLUDE_DIRS})
+    target_include_directories(test_stability_measures
+                               PRIVATE ${EIGEN3_INCLUDE_DIRS})
   endif()
 
-  ament_add_gtest(test_convex_hull
-          test/test_convex_hull.cpp
-  )
+  ament_add_gtest(test_convex_hull test/test_convex_hull.cpp)
   if(TARGET test_convex_hull)
     target_link_libraries(test_convex_hull ${PROJECT_NAME})
     target_include_directories(test_convex_hull PRIVATE ${EIGEN3_INCLUDE_DIRS})
@@ -69,16 +62,13 @@ if(BUILD_TESTING)
     include(CodeCoverage)
     append_coverage_compiler_flags()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/build/*")
-    add_code_coverage(
-            NAME ${PROJECT_NAME}_coverage
-            EXECUTABLE ctest
-    )
+    add_code_coverage(NAME ${PROJECT_NAME}_coverage EXECUTABLE ctest)
   endif()
 endif()
 
-################
-##  Export    ##
-################
+# ##############################################################################
+# Export    ##
+# ##############################################################################
 
 ament_export_include_directories(include)
 ament_export_dependencies(Eigen3)

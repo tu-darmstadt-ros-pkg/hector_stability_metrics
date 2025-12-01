@@ -1,18 +1,17 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <package format="3">
   <name>hector_stability_metrics</name>
   <version>0.2.0</version>
   <description>The hector_stability_metrics package</description>
-
-  <maintainer email="fabian@sim.tu-darmstadt.de">Stefan Fabian</maintainer>
-  <maintainer email="oehler@sim.tu-darmstadt.de">Martin Oehler</maintainer>
-  <maintainer email="biemueller@sim.tu-darmstadt.de">Felix Biemüller</maintainer>
   <maintainer email="schmidt@sim.tu-darmstadt.de">Aljoscha Schmidt</maintainer>
-
+  <maintainer email="biemueller@sim.tu-darmstadt.de">Felix Biemüller</maintainer>
+  <maintainer email="oehler@sim.tu-darmstadt.de">Martin Oehler</maintainer>
+  <maintainer email="fabian@sim.tu-darmstadt.de">Stefan Fabian</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <test_depend>rostest</test_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -48,7 +48,7 @@ Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &po
 /**
  * @brief getSupportPolygonEdge returns a vector pointing from one corner of a support polygon to the next.
  * @param support_polygon A vector of the corner points in the support polygon in clockwise order when viewed from above.
- * @param index The index of the corner of the suport polygon where the edge starts.
+ * @param index The index of the corner of the support polygon where the edge starts.
  * @return The vector from the corner with the specified index to the next corner.
  */
 template<typename Scalar>

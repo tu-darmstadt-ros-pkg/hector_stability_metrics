@@ -56,7 +56,7 @@ Scalar differentiableExceptZeroSignum( const Scalar &value )
  * @brief algebraicSigmoid approximates the sign function with the algebraic function
  * f(x)=x/sqrt(x^2+epsilon) such that is continuously differentiable
  * @param value input value
- * @param epsilon small value added to x^2 to prevent devision by zero
+ * @param epsilon small value added to x^2 to prevent division by zero
  */
 template<typename Scalar>
 Scalar algebraicSigmoid( const Scalar &value, const Scalar &epsilon )

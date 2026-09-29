@@ -50,6 +50,11 @@ if(BUILD_TESTING)
                                PRIVATE ${EIGEN3_INCLUDE_DIRS})
   endif()
 
+  ament_add_gtest(test_landing_aware_margin test/test_landing_aware_margin.cpp)
+  if(TARGET test_landing_aware_margin)
+    target_link_libraries(test_landing_aware_margin ${PROJECT_NAME})
+  endif()
+
   ament_add_gtest(test_convex_hull test/test_convex_hull.cpp)
   if(TARGET test_convex_hull)
     target_link_libraries(test_convex_hull ${PROJECT_NAME})

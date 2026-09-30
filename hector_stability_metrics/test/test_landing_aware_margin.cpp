@@ -353,8 +353,8 @@ TEST( LandingAwareMargin, TheLandingCountsOnlyUpToLiftOff )
 
 TEST( LandingAwareMargin, ForwardOffAStep )
 {
-  // Prototype numbers for Athena's com 3 cm before a 0.2 m step: NESM 0.002, the landing on
-  // the lower level drops the com 3 mm and gives h_j 0.170 at kappa 0.340.
+  // Prototype numbers for a tracked robot's com 3 cm before a 0.2 m step: NESM 0.002, the
+  // landing on the lower level drops the com 3 mm and gives h_j 0.170 at kappa 0.340.
   LandingEdge<double> edge;
   edge.hill_one = 0.002;
   edge.kinetic_energy = 0;

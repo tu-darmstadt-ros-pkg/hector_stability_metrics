@@ -315,6 +315,42 @@ TEST( LandingAwareMargin, FloatInstantiation )
   EXPECT_NEAR( computeLandingAwareEnergyStabilityMarginValue( edges, values, 0.25 ), 0.1f, 1e-7 );
 }
 
+TEST( LandingAwareMargin, LiftOffOfAPointMass )
+{
+  // For a point mass I_a = m r², so the pivot unloads at r cos(theta) / 2.
+  const TippingAxis<double> axis{ Vector3d( 0, 0, 0 ), Vector3d::UnitY() };
+  const double mass = 3;
+  const Vector3d above( 0, 0, 0.4 ), aside( 0.3, 0, 0.4 ), level( 0.5, 0, 0 );
+  EXPECT_NEAR( pivotLiftOffEnergy<double>( Matrix3d::Zero(), mass, above, axis ), 0.2, kTol );
+  EXPECT_NEAR( pivotLiftOffEnergy<double>( Matrix3d::Zero(), mass, aside, axis ), 0.5 * 0.4 / 0.5 * 0.5, kTol );
+  EXPECT_EQ( pivotLiftOffEnergy<double>( Matrix3d::Zero(), mass, level, axis ), 0.0 );
+  EXPECT_EQ( pivotLiftOffEnergy<double>( Matrix3d::Zero(), mass, Vector3d( 0, 5, 0 ), axis ),
+             std::numeric_limits<double>::infinity() );
+  // Inertia about the com adds to the energy the pivot holds.
+  EXPECT_NEAR( pivotLiftOffEnergy<double>( Matrix3d::Identity() * 0.12, mass, above, axis ),
+               ( 0.12 + mass * 0.16 ) / ( 2 * mass * 0.4 ), kTol );
+}
+
+TEST( LandingAwareMargin, TheLandingCountsOnlyUpToLiftOff )
+{
+  LandingEdge<double> edge;
+  edge.hill_one = 0.02;
+  edge.kinetic_energy = 0.01;
+  edge.drop = 0.0;
+  edge.landed = true;
+  edge.candidates = { { 0.2, 0.5 } };
+  EXPECT_NEAR( landingMargin( edge ).value, 0.4 - 0.01, kTol );
+  edge.landing_limit = 0.15;
+  const LandingMargin<double> limited = landingMargin( edge );
+  EXPECT_NEAR( limited.value, 0.15 - 0.01, kTol );
+  EXPECT_EQ( limited.candidate, -1 );
+  // Never below hill one, since getting over the edge takes that much whatever follows.
+  edge.landing_limit = 0.0;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.01, kTol );
+  edge.landing_limit = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_TRUE( std::isnan( landingMargin( edge ).value ) );
+}
+
 TEST( LandingAwareMargin, ForwardOffAStep )
 {
   // Prototype numbers for Athena's com 3 cm before a 0.2 m step: NESM 0.002, the landing on

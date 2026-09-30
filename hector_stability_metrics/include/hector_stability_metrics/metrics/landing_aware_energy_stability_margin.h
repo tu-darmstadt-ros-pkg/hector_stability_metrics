@@ -1,4 +1,4 @@
-// Copyright (c) 2026. Licensed under the MIT license. See LICENSE file in the
+// Copyright (c) 2026 Aljoscha Schmidt. Licensed under the MIT license. See LICENSE file in the
 // project root for full license information.
 
 #ifndef HECTOR_STABILITY_METRICS_METRICS_LANDING_AWARE_ENERGY_STABILITY_MARGIN_H
@@ -40,6 +40,9 @@ namespace hector_stability_metrics
  * than \f$e_i\f$. Pushed by exactly that much it swings back through the current pose and lands
  * with \f$-h_i + D_i\f$, so \f$\beta_{ij} = e_i\f$ whenever \f$\kappa_{ij}(D_i - h_i) \ge h_j\f$.
  *
+ * What a landing forgives is bounded by the energy at which the robot leaves the pivot, see
+ * pivotLiftOffEnergy: \f$\beta_i \le \max(e_i, L_i - K_i)\f$.
+ *
  * \f$\beta_i\f$ is the minimum over the candidate edges j (landingCandidateEdges). A landing
  * that is itself a failure, no landing at all, or a landing without candidate edges gives
  * \f$\beta_i = e_i\f$. The margin of the state is the minimum over all edges. NaN in any input
@@ -58,13 +61,13 @@ namespace hector_stability_metrics
 namespace detail
 {
 template<typename T>
-struct NonDeduced {
+struct Identity {
   using type = T;
 };
-} // namespace detail
-
+/// Keeps an argument out of template deduction, so a float margin takes a double literal.
 template<typename Scalar>
-using NonDeduced = typename detail::NonDeduced<Scalar>::type;
+using NonDeduced = typename Identity<Scalar>::type;
+} // namespace detail
 
 template<typename Scalar>
 struct TippingAxis {
@@ -174,8 +177,8 @@ ImpactTransfer<Scalar> impactTransfer( const math::Matrix3<Scalar> &inertia_com,
 template<typename Scalar>
 std::vector<size_t> landingCandidateEdges( const math::Vector3List<Scalar> &landing_polygon,
                                            const std::vector<bool> &is_new,
-                                           NonDeduced<Scalar> line_threshold,
-                                           NonDeduced<Scalar> min_edge_length = Scalar( 1e-6 ) )
+                                           detail::NonDeduced<Scalar> line_threshold,
+                                           detail::NonDeduced<Scalar> min_edge_length = Scalar( 1e-6 ) )
 {
   const size_t n = landing_polygon.size();
   if ( is_new.size() != n )
@@ -204,8 +207,35 @@ std::vector<size_t> landingCandidateEdges( const math::Vector3List<Scalar> &land
   return candidates;
 }
 
+/*!
+ * @brief The energy toward an edge at which its pivot unloads.
+ *
+ * The edge holds a turn only while the pull of gravity toward the axis covers the centripetal
+ * acceleration of the centre of mass, \f$\omega^2 r \le g \cos\theta\f$ with r its distance from
+ * the axis and \f$\theta\f$ its angle from straight above it. The kinetic energy at that rate is
+ * \f$I_a \cos\theta / (2 m r)\f$ over m g. Beyond it the robot leaves the pivot, and a landing
+ * found for a turn about the edge no longer describes what happens. World z is up.
+ *
+ * @return The energy over m g, zero with the centre of mass level with or below the axis, and
+ * infinity with it on the axis.
+ */
 template<typename Scalar>
-struct LandingCandidate {
+Scalar pivotLiftOffEnergy( const math::Matrix3<Scalar> &inertia_com, Scalar mass,
+                           const math::Vector3<Scalar> &center_of_mass, const TippingAxis<Scalar> &axis )
+{
+  math::Vector3<Scalar> radial = center_of_mass - axis.point;
+  radial -= radial.dot( axis.direction ) * axis.direction;
+  const Scalar radius = radial.norm();
+  if ( radius <= std::numeric_limits<Scalar>::epsilon() )
+    return std::numeric_limits<Scalar>::infinity();
+  const Scalar up = radial.z() / radius;
+  if ( up <= 0 )
+    return Scalar( 0 );
+  return axisInertia( inertia_com, mass, center_of_mass, axis ) * up / ( 2 * mass * radius );
+}
+
+template<typename Scalar>
+struct CandidateEdge {
   //! Energy needed right after the impact to fail over this edge, see the group description.
   Scalar hill_two;
   //! Energy fraction from impactTransfer. Values at or below zero stop the robot.
@@ -219,7 +249,10 @@ struct LandingEdge {
   Scalar drop = 0;       //!< D_i, centre of mass height now minus in the landing pose
   bool landed = false;   //!< false if the robot turns half a turn without touching anything
   bool failed = false;   //!< the landing pose is a failure in itself
-  std::vector<LandingCandidate<Scalar>> candidates;
+  //! Energy toward the edge up to which the landing holds, see pivotLiftOffEnergy. What the
+  //! landing forgives beyond it is not counted.
+  Scalar landing_limit = std::numeric_limits<Scalar>::infinity();
+  std::vector<CandidateEdge<Scalar>> candidates;
 };
 
 template<typename Scalar>
@@ -235,7 +268,7 @@ struct LandingMargin {
  */
 template<typename Scalar>
 LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
-                                     NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
+                                     detail::NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
 {
   constexpr Scalar nan = std::numeric_limits<Scalar>::quiet_NaN();
   const Scalar hill_one = edge.hill_one - edge.kinetic_energy;
@@ -243,14 +276,14 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
     return { nan, -1 };
   if ( !edge.landed || edge.failed || edge.candidates.empty() )
     return { std::min( hill_one, cap ), -1 };
-  if ( std::isnan( edge.drop ) )
+  if ( std::isnan( edge.drop ) || std::isnan( edge.landing_limit ) )
     return { nan, -1 };
   // Landing energy of the robot pushed by exactly hill_one: it arrives at the top at rest, or
   // when already past the top it swings back through the current pose.
   const Scalar least_landing = edge.drop + std::abs( edge.hill_one );
   LandingMargin<Scalar> result{ std::numeric_limits<Scalar>::infinity(), -1 };
   for ( size_t j = 0; j < edge.candidates.size(); ++j ) {
-    const LandingCandidate<Scalar> &c = edge.candidates[j];
+    const CandidateEdge<Scalar> &c = edge.candidates[j];
     if ( std::isnan( c.hill_two ) || std::isnan( c.kappa ) )
       return { nan, static_cast<int>( j ) };
     Scalar value;
@@ -265,6 +298,10 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
     if ( value < result.value )
       result = { value, static_cast<int>( j ) };
   }
+  // What the landing forgives counts only up to the energy the pivot holds.
+  const Scalar limit = std::max( hill_one, edge.landing_limit - edge.kinetic_energy );
+  if ( result.value > limit )
+    result = { limit, -1 };
   if ( result.value > cap )
     result = { cap, -1 };
   return result;
@@ -277,7 +314,7 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
 template<typename Scalar>
 void computeLandingAwareEnergyStabilityMargin(
     const std::vector<LandingEdge<Scalar>> &edges, std::vector<Scalar> &edge_stabilities,
-    NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
+    detail::NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
 {
   edge_stabilities.resize( edges.size() );
   for ( size_t i = 0; i < edges.size(); ++i ) edge_stabilities[i] = landingMargin( edges[i], cap ).value;
@@ -290,7 +327,7 @@ void computeLandingAwareEnergyStabilityMargin(
 template<typename Scalar>
 size_t computeLandingAwareEnergyStabilityMarginLeastStableEdgeIndex(
     const std::vector<LandingEdge<Scalar>> &edges, std::vector<Scalar> &edge_stabilities,
-    NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
+    detail::NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
 {
   computeLandingAwareEnergyStabilityMargin( edges, edge_stabilities, cap );
   size_t least = 0;
@@ -309,7 +346,7 @@ size_t computeLandingAwareEnergyStabilityMarginLeastStableEdgeIndex(
 template<typename Scalar>
 Scalar computeLandingAwareEnergyStabilityMarginValue(
     const std::vector<LandingEdge<Scalar>> &edges, std::vector<Scalar> &edge_stabilities,
-    NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
+    detail::NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
 {
   if ( edges.empty() ) {
     edge_stabilities.clear();

@@ -262,6 +262,59 @@ TEST( LandingAwareMargin, PastTheTopSwingsBackThrough )
   EXPECT_NEAR( landingMargin( edge ).value, 0.2 / 0.5 - 0.02 - 0.1, kTol );
 }
 
+TEST( LandingAwareMargin, PastTheTopAndLandingOnTheTracksIsNotAFailure )
+{
+  // At rest, the centre of mass 5 cm of energy past edge i. Without a push it lands with
+  // D = 0.10, keeps kappa * 0.10 = 0.05 < 0.06 after the impact and stops on its tracks: no
+  // failure. Pushed outward by 0.02 it lands with 0.12 and goes over, pushed inward by 0.02 it
+  // stops short of the top, turns and comes back with the same 0.12.
+  LandingEdge<double> edge;
+  edge.hill_one = -0.05;
+  edge.kinetic_energy = 0;
+  edge.drop = 0.1;
+  edge.landed = true;
+  edge.candidates = { { 0.06, 0.5 } };
+  EXPECT_NEAR( landingMargin( edge ).value, 0.02, kTol );
+  // Already moving inward with 0.02 it fails as it is: it needs 0.02 of work to get out, either
+  // back over the top (0.03) or to below the failing energy (0.02).
+  edge.kinetic_energy = -0.02;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.0, kTol );
+  edge.kinetic_energy = -0.03;
+  EXPECT_NEAR( landingMargin( edge ).value, -0.01, kTol );
+  // Inward fast enough to get back over the top: it leaves the edge behind.
+  edge.kinetic_energy = -0.06;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.01, kTol );
+}
+
+TEST( LandingAwareMargin, TheRequirementOfALandingPointsForward )
+{
+  // Inside a chain the energy carried into the next turn points forward.
+  LandingEdge<double> edge;
+  edge.hill_one = 0.03;
+  edge.kinetic_energy = 0;
+  // Not landed: getting over the top fails.
+  EXPECT_NEAR( landingRequirement( edge ), 0.03, kTol );
+  edge.hill_one = -0.02;
+  EXPECT_NEAR( landingRequirement( edge ), 0.0, kTol );
+  // Landed, past the top: forward energy plus the drop has to carry over the next edge.
+  edge.landed = true;
+  edge.drop = 0.04;
+  edge.candidates = { { 0.05, 0.5 } };
+  EXPECT_NEAR( landingRequirement( edge ), 0.1 - 0.04, kTol );
+  // The margin from rest would also count an inward motion, which a landing cannot bring.
+  EXPECT_NEAR( landingMargin( edge ).value, 0.06, kTol );
+  // A landing that fails at rest needs nothing more.
+  edge.candidates = { { 0.01, 0.5 } };
+  EXPECT_NEAR( landingRequirement( edge ), 0.0, kTol );
+  EXPECT_LT( landingMargin( edge ).value, 0 );
+  // Before the top the barrier counts first.
+  edge.hill_one = 0.08;
+  EXPECT_NEAR( landingRequirement( edge ), 0.08, kTol );
+  edge.landing_limit = 0.05;
+  edge.candidates = { { 0.5, 0.5 } };
+  EXPECT_NEAR( landingRequirement( edge ), 0.08, kTol );
+}
+
 TEST( LandingAwareMargin, NanPropagates )
 {
   const double nan = std::numeric_limits<double>::quiet_NaN();

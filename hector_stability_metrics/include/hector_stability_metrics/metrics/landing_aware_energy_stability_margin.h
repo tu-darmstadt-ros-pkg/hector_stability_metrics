@@ -9,6 +9,7 @@
 #include <Eigen/Geometry>
 
 #include <algorithm>
+#include <utility>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -23,30 +24,33 @@ namespace hector_stability_metrics
  * stops, and still flags tips that end in a failure or keep rolling.
  *
  * All energies are normalized by the weight, so they are heights in metres like the NESM. For a
- * support edge i the robot is imagined to receive an extra push s about the edge. The margin
- * is the smallest s for which the robot ends up in a failure state:
- *
- *   \f$\beta_{ij} = \max\left(e_i,\; h_j/\kappa_{ij} - K_i - D_i\right),\quad e_i = h_i - K_i\f$
+ * support edge i let u be the energy toward the edge, the signed rotational kinetic energy about
+ * it, and K_i its current value. The margin of the edge is the signed distance of K_i from the
+ * set of u that end in a failure over edge i: positive by the work a push in either direction
+ * needs to bring the robot into the set, negative by the work it would need to get out of it.
  *
  * - \f$h_i\f$ the energy barrier of edge i, usually its signed NESM,
  * - \f$K_i\f$ the signed rotational kinetic energy toward edge i, see edgeKineticEnergy,
  * - \f$D_i\f$ the drop of the centre of mass from the current pose to the landing pose,
  * - \f$\kappa_{ij}\f$ the fraction of the energy an inelastic landing carries into rotation
  *   about the new edge j, see impactTransfer,
- * - \f$h_j\f$ the energy needed after the impact to fail: the signed NESM of edge j in the
- *   landing pose, or the requirement of a further landing when the caller continues the chain.
+ * - \f$h_j\f$ the energy needed after the impact to fail over edge j: its signed NESM in the
+ *   landing pose, or the landingRequirement of a further landing when the caller continues the
+ *   chain,
+ * - \f$T_i = \min_j h_j / \kappa_{ij}\f$ the cheapest landing energy that fails, and
+ *   \f$L_i\f$ the energy at which the robot leaves the pivot, see pivotLiftOffEnergy.
  *
- * A robot already past the top of edge i (\f$h_i < 0\f$) cannot be pushed back over it by less
- * than \f$e_i\f$. Pushed by exactly that much it swings back through the current pose and lands
- * with \f$-h_i + D_i\f$, so \f$\beta_{ij} = e_i\f$ whenever \f$\kappa_{ij}(D_i - h_i) \ge h_j\f$.
+ * A robot that gets over the top of edge i lands with \f$|u| + D_i\f$ measured from the
+ * current pose. Before the top (\f$h_i \ge 0\f$) it fails for
+ * \f$u \ge \max(h_i, \min(T_i - D_i, L_i))\f$. Past the top (\f$h_i < 0\f$) it fails for
+ * \f$u \ge \max(0, \min(T_i - D_i, L_i))\f$, and for \f$h_i < u \le -(T_i - D_i)\f$: an
+ * inward motion too weak to get back over the top turns and comes back with the same energy.
+ * A landing past the lift off energy is not trusted and counts as a failure.
  *
- * What a landing forgives is bounded by the energy at which the robot leaves the pivot, see
- * pivotLiftOffEnergy: \f$\beta_i \le \max(e_i, L_i - K_i)\f$.
- *
- * \f$\beta_i\f$ is the minimum over the candidate edges j (landingCandidateEdges). A landing
- * that is itself a failure, no landing at all, or a landing without candidate edges gives
- * \f$\beta_i = e_i\f$. The margin of the state is the minimum over all edges. NaN in any input
- * gives NaN.
+ * A landing that is itself a failure, no landing at all, or a landing without candidate edges
+ * fails for every u past the top, so the margin is \f$e_i = h_i - K_i\f$. Without motion
+ * toward the edge and before its top the margin is never below the NESM. The margin of the state
+ * is the minimum over all edges. NaN in any input gives NaN.
  *
  * Geometry is the caller's: this header neither searches for the landing pose nor decides
  * whether a landing is a failure.
@@ -264,47 +268,111 @@ struct LandingMargin {
 };
 
 /*!
- * @return The margin of one edge, at most @p cap.
+ * The cheapest landing energy at which some candidate edge fails, and that candidate: E with
+ * kappa_j E >= hill_two_j, minus infinity for a candidate that fails at any energy (kappa_j <= 0
+ * and hill_two_j <= 0). Infinity and -1 when none can fail. NaN in a candidate gives NaN.
+ */
+template<typename Scalar>
+std::pair<Scalar, int> landingThreshold( const LandingEdge<Scalar> &edge )
+{
+  Scalar threshold = std::numeric_limits<Scalar>::infinity();
+  int candidate = -1;
+  for ( size_t j = 0; j < edge.candidates.size(); ++j ) {
+    const CandidateEdge<Scalar> &c = edge.candidates[j];
+    if ( std::isnan( c.hill_two ) || std::isnan( c.kappa ) )
+      return { std::numeric_limits<Scalar>::quiet_NaN(), static_cast<int>( j ) };
+    Scalar t;
+    if ( c.kappa > 0 )
+      t = c.hill_two / c.kappa;
+    else if ( c.hill_two <= 0 )
+      t = -std::numeric_limits<Scalar>::infinity();
+    else
+      continue;
+    if ( t < threshold ) {
+      threshold = t;
+      candidate = static_cast<int>( j );
+    }
+  }
+  return { threshold, candidate };
+}
+
+/*!
+ * @brief The margin of one edge, at most @p cap.
+ *
+ * The margin is the signed distance of the energy toward the edge, K, from the set of energies u
+ * that end in a failure over this edge: positive by how much work a push in either direction
+ * needs to bring the robot into that set, negative by how much it would need to get out of it.
+ * With T the cheapest failing landing energy (landingThreshold), D the drop and L the lift off
+ * energy, the set is
+ * - before the top (h >= 0): u >= max(h, min(T - D, L)),
+ * - past the top (h < 0): u >= max(0, min(T - D, L)), and h < u <= -(T - D), a motion inward too
+ *   weak to get back over the top, which turns and comes back with the same energy.
+ * Without a landing, with a failed one or one without candidates every u past the top fails, and
+ * the margin is e = h - K.
  */
 template<typename Scalar>
 LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
                                      detail::NonDeduced<Scalar> cap = std::numeric_limits<Scalar>::infinity() )
 {
   constexpr Scalar nan = std::numeric_limits<Scalar>::quiet_NaN();
-  const Scalar hill_one = edge.hill_one - edge.kinetic_energy;
-  if ( std::isnan( hill_one ) )
+  const Scalar h = edge.hill_one, K = edge.kinetic_energy;
+  if ( std::isnan( h ) || std::isnan( K ) )
     return { nan, -1 };
   if ( !edge.landed || edge.failed || edge.candidates.empty() )
-    return { std::min( hill_one, cap ), -1 };
+    return { std::min( h - K, cap ), -1 };
   if ( std::isnan( edge.drop ) || std::isnan( edge.landing_limit ) )
     return { nan, -1 };
-  // Landing energy of the robot pushed by exactly hill_one: it arrives at the top at rest, or
-  // when already past the top it swings back through the current pose.
-  const Scalar least_landing = edge.drop + std::abs( edge.hill_one );
-  LandingMargin<Scalar> result{ std::numeric_limits<Scalar>::infinity(), -1 };
-  for ( size_t j = 0; j < edge.candidates.size(); ++j ) {
-    const CandidateEdge<Scalar> &c = edge.candidates[j];
-    if ( std::isnan( c.hill_two ) || std::isnan( c.kappa ) )
-      return { nan, static_cast<int>( j ) };
-    Scalar value;
-    if ( c.kappa > 0 && c.kappa * least_landing >= c.hill_two )
-      value = hill_one;
-    else if ( c.kappa > 0 )
-      value = std::max( hill_one, c.hill_two / c.kappa - edge.kinetic_energy - edge.drop );
-    else if ( c.hill_two <= 0 )
-      value = hill_one;
-    else
-      continue;
-    if ( value < result.value )
-      result = { value, static_cast<int>( j ) };
+  const auto [threshold, candidate] = landingThreshold( edge );
+  if ( std::isnan( threshold ) )
+    return { nan, candidate };
+  const Scalar landing = threshold - edge.drop;
+  const bool lift_off_decides = edge.landing_limit < landing;
+  const Scalar forward = std::max( std::max( h, Scalar( 0 ) ), std::min( landing, edge.landing_limit ) );
+  // Past the top, inward motion up to this fails too, if it does not reach back over the top.
+  const Scalar inward = std::min( Scalar( 0 ), -landing );
+  const bool has_inward = h < 0 && inward > h;
+  // The two parts of the set touch when the landing fails at zero energy.
+  const bool joined = has_inward && inward >= forward;
+  Scalar value;
+  if ( K >= forward ) {
+    value = -( joined ? K - h : K - forward );
+  } else if ( has_inward && K > h && K <= inward ) {
+    // Out either back over the top or just past the inward part.
+    value = -( joined ? K - h : std::min( K - h, inward - K ) );
+  } else {
+    value = forward - K;
+    if ( has_inward )
+      value = std::min( value, K > inward ? K - inward : h - K );
   }
-  // What the landing forgives counts only up to the energy the pivot holds.
-  const Scalar limit = std::max( hill_one, edge.landing_limit - edge.kinetic_energy );
-  if ( result.value > limit )
-    result = { limit, -1 };
+  LandingMargin<Scalar> result{ value, lift_off_decides ? -1 : candidate };
   if ( result.value > cap )
     result = { cap, -1 };
   return result;
+}
+
+/*!
+ * @brief The smallest energy toward the edge, forward only, with which the robot at rest ends in
+ * a failure over it: what a landing that turns the robot about this edge has to bring.
+ *
+ * Inside a chain of landings the energy carried into the next turn points forward, so the inward
+ * part of the failure set of landingMargin does not apply. Zero when the robot fails at rest.
+ */
+template<typename Scalar>
+Scalar landingRequirement( const LandingEdge<Scalar> &edge )
+{
+  constexpr Scalar nan = std::numeric_limits<Scalar>::quiet_NaN();
+  const Scalar h = edge.hill_one;
+  if ( std::isnan( h ) )
+    return nan;
+  const Scalar over = std::max( h, Scalar( 0 ) );
+  if ( !edge.landed || edge.failed || edge.candidates.empty() )
+    return over;
+  if ( std::isnan( edge.drop ) || std::isnan( edge.landing_limit ) )
+    return nan;
+  const Scalar threshold = landingThreshold( edge ).first;
+  if ( std::isnan( threshold ) )
+    return nan;
+  return std::max( over, std::min( threshold - edge.drop, edge.landing_limit ) );
 }
 
 /*!

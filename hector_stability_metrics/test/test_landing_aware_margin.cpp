@@ -1,4 +1,4 @@
-// Copyright (c) 2026. Licensed under the MIT license. See LICENSE file in the
+// Copyright (c) 2026 Aljoscha Schmidt. Licensed under the MIT license. See LICENSE file in the
 // project root for full license information.
 
 #include <hector_stability_metrics/metrics/landing_aware_energy_stability_margin.h>

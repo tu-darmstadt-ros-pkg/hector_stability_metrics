@@ -12,28 +12,37 @@ namespace hector_stability_metrics
 namespace math
 {
 
+/// Contact points closer than this in x and y, 0.1 mm for points in metres, give one vertex of
+/// the support polygon. Two contacts at one spot, as two collisions touching the same edge, would
+/// otherwise make an edge without a direction, whose margin is meaningless and can be the smallest.
+template<typename Scalar>
+constexpr Scalar kSupportPolygonMergeDistance = Scalar( 1e-4 );
+
 template<typename Container,
          typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 void supportPolygonFromSortedContactPoints( const Container &points, Vector3List<Scalar> &result,
-                                            Scalar threshold = Scalar( 0.0 ) )
+                                            Scalar threshold = Scalar( 0.0 ),
+                                            Scalar merge_distance = kSupportPolygonMergeDistance<Scalar> )
 {
-  math::convexHull( points, result, threshold );
+  math::convexHull( points, result, threshold, merge_distance );
 }
 
 template<typename Container,
          typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 Vector3List<Scalar> supportPolygonFromSortedContactPoints( const Container &points,
-                                                           Scalar threshold = Scalar( 0.0 ) )
+                                                           Scalar threshold = Scalar( 0.0 ),
+                                                           Scalar merge_distance = kSupportPolygonMergeDistance<Scalar> )
 {
   Vector3List<Scalar> result;
-  math::convexHull( points, result, threshold );
+  math::convexHull( points, result, threshold, merge_distance );
   return result;
 }
 
 template<typename Container,
          typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
 Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &points,
-                                                             Scalar threshold = Scalar( 0.0 ) )
+                                                             Scalar threshold = Scalar( 0.0 ),
+                                                             Scalar merge_distance = kSupportPolygonMergeDistance<Scalar> )
 {
   Container copy = points;
   std::sort( copy.begin(), copy.end(),
@@ -42,7 +51,7 @@ Vector3List<Scalar> supportPolygonFromUnsortedContactPoints( const Container &po
                  return true;
                return a.y() == b.y() && a.x() < b.x();
              } );
-  return supportPolygonFromSortedContactPoints( copy, threshold );
+  return supportPolygonFromSortedContactPoints( copy, threshold, merge_distance );
 }
 
 /**

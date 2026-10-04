@@ -315,6 +315,30 @@ TEST( LandingAwareMargin, TheRequirementOfALandingPointsForward )
   EXPECT_NEAR( landingRequirement( edge ), 0.08, kTol );
 }
 
+TEST( LandingAwareMargin, AFailurePoseOnTheWayDecides )
+{
+  // Leaning back steeply, the turn passes the tilt limit after a rise of 0.01, before the top
+  // of the edge at 0.05: that rise is what fails, whatever the landing would be.
+  LandingEdge<double> edge;
+  edge.hill_one = 0.05;
+  edge.kinetic_energy = 0;
+  edge.drop = 0.02;
+  edge.landed = true;
+  edge.candidates = { { 0.2, 0.5 } };
+  EXPECT_NEAR( landingMargin( edge ).value, 0.38, kTol );
+  edge.failure_energy = 0.01;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.01, kTol );
+  EXPECT_NEAR( landingRequirement( edge ), 0.01, kTol );
+  edge.kinetic_energy = 0.03;
+  EXPECT_NEAR( landingMargin( edge ).value, -0.02, kTol );
+  // Past the top it caps the landing like the lift off energy.
+  edge.kinetic_energy = 0;
+  edge.failure_energy = 0.2;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.2, kTol );
+  edge.hill_one = -0.01;
+  EXPECT_NEAR( landingMargin( edge ).value, 0.2, kTol );
+}
+
 TEST( LandingAwareMargin, NanPropagates )
 {
   const double nan = std::numeric_limits<double>::quiet_NaN();

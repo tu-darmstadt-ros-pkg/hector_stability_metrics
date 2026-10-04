@@ -46,6 +46,9 @@ namespace hector_stability_metrics
  * \f$u \ge \max(0, \min(T_i - D_i, L_i))\f$, and for \f$h_i < u \le -(T_i - D_i)\f$: an
  * inward motion too weak to get back over the top turns and comes back with the same energy.
  * A landing past the lift off energy is not trusted and counts as a failure.
+ * A turn that reaches a failure pose on its way, as a tilt past a limit, fails at the energy
+ * that brings the robot there, \f$F_i\f$ (LandingEdge::failure_energy), also before the top:
+ * the set then starts at \f$\min(\ldots, F_i)\f$.
  *
  * A landing that is itself a failure, no landing at all, or a landing without candidate edges
  * fails for every u past the top, so the margin is \f$e_i = h_i - K_i\f$. Without motion
@@ -256,6 +259,10 @@ struct LandingEdge {
   //! Energy toward the edge up to which the landing holds, see pivotLiftOffEnergy. What the
   //! landing forgives beyond it is not counted.
   Scalar landing_limit = std::numeric_limits<Scalar>::infinity();
+  //! Energy toward the edge at which the turn reaches a failure pose on its way, before any
+  //! landing, as a tilt past a limit: the rise of the centre of mass up to there. Infinity when
+  //! the turn reaches none.
+  Scalar failure_energy = std::numeric_limits<Scalar>::infinity();
   std::vector<CandidateEdge<Scalar>> candidates;
 };
 
@@ -316,8 +323,11 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
 {
   constexpr Scalar nan = std::numeric_limits<Scalar>::quiet_NaN();
   const Scalar h = edge.hill_one, K = edge.kinetic_energy;
-  if ( std::isnan( h ) || std::isnan( K ) )
+  if ( std::isnan( h ) || std::isnan( K ) || std::isnan( edge.failure_energy ) )
     return { nan, -1 };
+  // A turn that reaches a failure pose on its way fails at that energy, also before the top.
+  if ( edge.failure_energy < std::max( h, Scalar( 0 ) ) )
+    return { std::min( edge.failure_energy - K, cap ), -1 };
   if ( !edge.landed || edge.failed || edge.candidates.empty() )
     return { std::min( h - K, cap ), -1 };
   if ( std::isnan( edge.drop ) || std::isnan( edge.landing_limit ) )
@@ -326,8 +336,9 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
   if ( std::isnan( threshold ) )
     return { nan, candidate };
   const Scalar landing = threshold - edge.drop;
-  const bool lift_off_decides = edge.landing_limit < landing;
-  const Scalar forward = std::max( std::max( h, Scalar( 0 ) ), std::min( landing, edge.landing_limit ) );
+  const Scalar limit = std::min( edge.landing_limit, edge.failure_energy );
+  const bool lift_off_decides = limit < landing;
+  const Scalar forward = std::max( std::max( h, Scalar( 0 ) ), std::min( landing, limit ) );
   // Past the top, inward motion up to this fails too, if it does not reach back over the top.
   const Scalar inward = std::min( Scalar( 0 ), -landing );
   const bool has_inward = h < 0 && inward > h;
@@ -362,9 +373,11 @@ Scalar landingRequirement( const LandingEdge<Scalar> &edge )
 {
   constexpr Scalar nan = std::numeric_limits<Scalar>::quiet_NaN();
   const Scalar h = edge.hill_one;
-  if ( std::isnan( h ) )
+  if ( std::isnan( h ) || std::isnan( edge.failure_energy ) )
     return nan;
   const Scalar over = std::max( h, Scalar( 0 ) );
+  if ( edge.failure_energy < over )
+    return std::max( edge.failure_energy, Scalar( 0 ) );
   if ( !edge.landed || edge.failed || edge.candidates.empty() )
     return over;
   if ( std::isnan( edge.drop ) || std::isnan( edge.landing_limit ) )
@@ -372,7 +385,7 @@ Scalar landingRequirement( const LandingEdge<Scalar> &edge )
   const Scalar threshold = landingThreshold( edge ).first;
   if ( std::isnan( threshold ) )
     return nan;
-  return std::max( over, std::min( threshold - edge.drop, edge.landing_limit ) );
+  return std::max( over, std::min( threshold - edge.drop, std::min( edge.landing_limit, edge.failure_energy ) ) );
 }
 
 /*!

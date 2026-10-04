@@ -284,6 +284,11 @@ TEST( LandingAwareMargin, PastTheTopAndLandingOnTheTracksIsNotAFailure )
   // Inward fast enough to get back over the top: it leaves the edge behind.
   edge.kinetic_energy = -0.06;
   EXPECT_NEAR( landingMargin( edge ).value, 0.01, kTol );
+  // Coming back with 0.015 it would leave the pivot (lift off 0.015) before the landing: an inward
+  // motion of 0.015 fails as well as an outward one.
+  edge.landing_limit = 0.015;
+  edge.kinetic_energy = -0.016;
+  EXPECT_NEAR( landingMargin( edge ).value, -0.001, kTol );
 }
 
 TEST( LandingAwareMargin, TheRequirementOfALandingPointsForward )

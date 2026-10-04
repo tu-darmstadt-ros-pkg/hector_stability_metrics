@@ -312,8 +312,8 @@ std::pair<Scalar, int> landingThreshold( const LandingEdge<Scalar> &edge )
  * With T the cheapest failing landing energy (landingThreshold), D the drop and L the lift off
  * energy, the set is
  * - before the top (h >= 0): u >= max(h, min(T - D, L)),
- * - past the top (h < 0): u >= max(0, min(T - D, L)), and h < u <= -(T - D), a motion inward too
- *   weak to get back over the top, which turns and comes back with the same energy.
+ * - past the top (h < 0): u >= max(0, min(T - D, L)), and h < u <= -min(T - D, L), a motion
+ *   inward too weak to get back over the top, which turns and comes back with the same energy.
  * Without a landing, with a failed one or one without candidates every u past the top fails, and
  * the margin is e = h - K.
  */
@@ -339,8 +339,10 @@ LandingMargin<Scalar> landingMargin( const LandingEdge<Scalar> &edge,
   const Scalar limit = std::min( edge.landing_limit, edge.failure_energy );
   const bool lift_off_decides = limit < landing;
   const Scalar forward = std::max( std::max( h, Scalar( 0 ) ), std::min( landing, limit ) );
-  // Past the top, inward motion up to this fails too, if it does not reach back over the top.
-  const Scalar inward = std::min( Scalar( 0 ), -landing );
+  // Past the top, inward motion up to this fails too, if it does not reach back over the top:
+  // it comes back with the same energy, which the landing, the lift off or a failure pose on the
+  // way bound alike.
+  const Scalar inward = std::min( Scalar( 0 ), -std::min( landing, limit ) );
   const bool has_inward = h < 0 && inward > h;
   // The two parts of the set touch when the landing fails at zero energy.
   const bool joined = has_inward && inward >= forward;

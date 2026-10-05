@@ -4,8 +4,8 @@
 // Every header compiles when it is included first.
 #include <hector_stability_metrics/math/hull.h>
 #include <hector_stability_metrics/math/support_polygon.h>
-#include <hector_stability_metrics/metrics/landing_aware_energy_stability_margin.h>
 #include <hector_stability_metrics/metrics/normalized_energy_stability_margin.h>
+#include <hector_stability_metrics/metrics/tipping.h>
 
 #include <gtest/gtest.h>
 

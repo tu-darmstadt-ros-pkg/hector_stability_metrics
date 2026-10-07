@@ -4,6 +4,8 @@
 #ifndef HECTOR_STABILITY_METRICS_HULL_H
 #define HECTOR_STABILITY_METRICS_HULL_H
 
+#include <Eigen/Core>
+
 #include <cstddef>
 
 namespace hector_stability_metrics
@@ -37,31 +39,44 @@ isClockwiseTurn( const MatrixBase1 &o, const MatrixBase2 &a, const MatrixBase3 &
  * @param points The candidate points for which the hull is computed
  * @param result The convex hull formed by a subset of the given points. The points are listed in clockwise order.
  * @param threshold Positive values increase the strictness for determining convexity and, therefore, simplify the support polygon.
+ * @param merge_distance Hull vertices closer than this in x and y are one. Two input points at one spot otherwise become two
+ *   vertices, and the edge between them has no direction. Zero keeps every vertex the algorithm returns.
  */
 template<typename Container,
          typename Scalar = typename Eigen::DenseBase<typename Container::value_type>::Scalar>
-inline void convexHull( const Container &points, Container &result, Scalar threshold = Scalar( 0.0 ) )
+inline void convexHull( const Container &points, Container &result, Scalar threshold = Scalar( 0.0 ),
+                        Scalar merge_distance = Scalar( 0.0 ) )
 {
   size_t n = points.size();
   result.clear();
   if ( n <= 2 ) {
     result.reserve( 2 );
     result.insert( result.begin(), points.begin(), points.end() );
+  } else {
+    size_t k = 0;
+    result.resize( 2 * n );
+    for ( size_t i = 0; i < n; ++i, ++k ) {
+      while ( k >= 2 && !isClockwiseTurn( result[k - 2], result[k - 1], points[i], threshold ) ) --k;
+      result[k] = points[i];
+    }
+    for ( size_t i = n, t = k + 1; i > 0; --i, ++k ) {
+      const auto &pt = points[i - 1];
+      while ( k >= t && !isClockwiseTurn( result[k - 2], result[k - 1], pt, threshold ) ) --k;
+      result[k] = pt;
+    }
+    result.resize( k - 1 );
+  }
+  if ( merge_distance <= Scalar( 0 ) || result.empty() )
     return;
+  // The chain starts and ends at the same point, so a near duplicate of the
+  // first vertex can also sit at the end.
+  size_t kept = 1;
+  for ( size_t i = 1; i < result.size(); ++i ) {
+    if ( ( result[i] - result[kept - 1] ).template head<2>().norm() > merge_distance )
+      result[kept++] = result[i];
   }
-
-  size_t k = 0;
-  result.resize( 2 * n );
-  for ( size_t i = 0; i < n; ++i, ++k ) {
-    while ( k >= 2 && !isClockwiseTurn( result[k - 2], result[k - 1], points[i], threshold ) ) --k;
-    result[k] = points[i];
-  }
-  for ( size_t i = n, t = k + 1; i > 0; --i, ++k ) {
-    const auto &pt = points[i - 1];
-    while ( k >= t && !isClockwiseTurn( result[k - 2], result[k - 1], pt, threshold ) ) --k;
-    result[k] = pt;
-  }
-  result.resize( k - 1 );
+  while ( kept > 1 && ( result[0] - result[kept - 1] ).template head<2>().norm() <= merge_distance ) --kept;
+  result.resize( kept );
 }
 } // namespace math
 } // namespace hector_stability_metrics

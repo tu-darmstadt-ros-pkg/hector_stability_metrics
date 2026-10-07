@@ -24,3 +24,7 @@ the minimum over all edges, `...LeastStableEdgeIndex` the index of that edge.
   Stability Margin (Garcia, De Santos, 2005). Takes the normalized resultant
   `(g - a_com) / |g|`, which is `(0, 0, -1)` in the static case, where it
   reduces to the NESM. Signed like the NESM.
+- `tippingAxis`, `axisInertia`, `edgeKineticEnergy` (`metrics/tipping.h`): the axis a
+  support edge tips about, the robot's moment of inertia about it, and the signed
+  rotational kinetic energy toward it, normalized by the weight like the NESM.
+  `sdf_landing_stability` builds its landing aware margin on these and the NESM.

@@ -50,6 +50,17 @@ if(BUILD_TESTING)
                                PRIVATE ${EIGEN3_INCLUDE_DIRS})
   endif()
 
+  ament_add_gtest(test_tipping test/test_tipping.cpp)
+  if(TARGET test_tipping)
+    target_link_libraries(test_tipping ${PROJECT_NAME})
+  endif()
+
+  ament_add_gtest(test_headers test/test_headers.cpp)
+  if(TARGET test_headers)
+    target_link_libraries(test_headers ${PROJECT_NAME})
+    target_include_directories(test_headers PRIVATE ${EIGEN3_INCLUDE_DIRS})
+  endif()
+
   ament_add_gtest(test_convex_hull test/test_convex_hull.cpp)
   if(TARGET test_convex_hull)
     target_link_libraries(test_convex_hull ${PROJECT_NAME})

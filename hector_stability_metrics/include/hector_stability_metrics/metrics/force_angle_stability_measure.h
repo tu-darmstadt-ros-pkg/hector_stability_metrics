@@ -8,6 +8,7 @@
 #include "hector_stability_metrics/metrics/common.h"
 
 #include <Eigen/Geometry>
+#include <algorithm>
 
 namespace hector_stability_metrics
 {
@@ -81,7 +82,11 @@ typename MinimumSelector::ReturnType computeForceAngleStabilityMeasure(
             .norm();
     axis_normal.normalize();
     const Scalar sigma = axis_normal.cross( force_component_normalized ).dot( axis ) < 0 ? 1 : -1;
-    const Scalar theta = sigma * std::acos( force_component_normalized.dot( axis_normal ) );
+    // Clamp to valid acos input range as the dot product of the normalized vectors can be
+    // slightly outside [-1, 1] due to floating point rounding
+    const Scalar cos_theta =
+        std::clamp<Scalar>( force_component_normalized.dot( axis_normal ), -1, 1 );
+    const Scalar theta = sigma * std::acos( cos_theta );
     const Scalar beta = theta * distance * force_component_norm;
     const Scalar value = beta * normalization_factor;
     edge_stabilities[i] = value;

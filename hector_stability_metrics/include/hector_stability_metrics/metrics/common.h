@@ -4,6 +4,8 @@
 #ifndef HECTOR_STABILITY_METRICS_METRICS_COMMON_DATA_H
 #define HECTOR_STABILITY_METRICS_METRICS_COMMON_DATA_H
 
+#include <cmath>
+
 namespace hector_stability_metrics
 {
 
@@ -14,9 +16,10 @@ struct MinimumSelector {
   using ReturnType = ReturnT;
   Scalar minimum = std::numeric_limits<Scalar>::quiet_NaN();
 
+  //! NaN values are ignored, except that the minimum stays NaN if all values are NaN.
   void updateMinimum( size_t, Scalar value )
   {
-    if ( value >= minimum )
+    if ( value >= minimum || std::isnan( value ) )
       return;
     minimum = value;
   }
@@ -30,9 +33,10 @@ struct MinimumSelector<Scalar, ReturnT, true> {
   Scalar minimum = std::numeric_limits<Scalar>::quiet_NaN();
   ReturnT minimum_index = 0;
 
+  //! NaN values are ignored. If all values are NaN, the index stays 0.
   void updateMinimum( size_t index, Scalar value )
   {
-    if ( value >= minimum )
+    if ( value >= minimum || std::isnan( value ) )
       return;
     minimum = value;
     minimum_index = index;

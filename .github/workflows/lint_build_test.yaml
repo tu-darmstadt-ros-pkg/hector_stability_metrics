@@ -4,11 +4,6 @@ on:
     branches:
       - jazzy
   pull_request:
-    branches:
-      - jazzy
-defaults:
-  run:
-    shell: bash
 
 jobs:
   Linting:
@@ -42,8 +37,8 @@ jobs:
         setup:
           - rosdistro: jazzy
             os: ubuntu-24.04
-          - rosdistro: rolling
-            os: ubuntu-latest
+          - rosdistro: lyrical
+            os: ubuntu-26.04
     runs-on: ${{ matrix.setup.os }}
     container:
       image: ros:${{ matrix.setup.rosdistro }}-ros-base
